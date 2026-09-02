@@ -1,0 +1,17 @@
+# This docker-compose file is used to set up a PostgreSQL database container
+
+services:
+    db:
+        image: postgres
+        container_name: db_icompras
+        restart: always
+        #  Postgres recommended shared memory limit
+        shm_size: 128mb
+        environment:
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_USER: postgres
+            POSTGRES_MULTIPLE_DATABASES: icompras-products, icompras-orders, icompras-clients
+        ports:
+            - "5555:5432"
+        volumes:
+            - ./data:/var/lib/postgresql

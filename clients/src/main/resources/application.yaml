@@ -1,0 +1,29 @@
+#
+# --- CLIENTS MICROSERVICE ---
+#
+spring:
+    application:
+        name: clients
+    # PostgreSQL Configuration
+    datasource:
+        url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5555/clients}
+        username: ${SPRING_DATASOURCE_USERNAME:user_clientes}
+        password: ${SPRING_DATASOURCE_PASSWORD:senha_clientes_123}
+        driver-class-name: org.postgresql.Driver
+
+    # Hibernate/JPA Configuration
+    jpa:
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
+        hibernate:
+            ddl-auto: validate
+        show-sql: true
+        properties:
+            hibernate:
+                format_sql: true
+
+    # Flyway Configuration
+    flyway:
+        enabled: true
+        baseline-on-migrate: true
+server:
+    port: 8082

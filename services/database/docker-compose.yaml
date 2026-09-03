@@ -1,17 +1,52 @@
 # This docker-compose file is used to set up a PostgreSQL database container
 
 services:
-    db:
-        image: postgres
-        container_name: db_icompras
-        restart: always
-        #  Postgres recommended shared memory limit
+    # 1. Centralized Database Server (Postgres 18)
+    postgres-db:
+        image: postgres:18
+        container_name: postgres_container
+        # Postgres recommended shared memory limit
         shm_size: 128mb
         environment:
-            POSTGRES_PASSWORD: postgres
-            POSTGRES_USER: postgres
-            POSTGRES_MULTIPLE_DATABASES: icompras-products, icompras-orders, icompras-clients
+            POSTGRES_USER: ${DB_SUPER_USER} # Superuser for the database
+            POSTGRES_PASSWORD: ${DB_SUPER_PASSWORD}
+            POSTGRES_DB: ${DB_DEFAULT_NAME}
         ports:
-            - "5555:5432"
+            - "${DB_PORT_EXTERNAL}:5432"
         volumes:
             - ./data:/var/lib/postgresql
+            # Executes the SQL script to create users and databases for different services (clients, products, etc.)
+            - ./init-dbs.sql:/docker-entrypoint-initdb.d/init-dbs.sql:ro
+        restart: unless-stopped
+
+    # 2. Product Microservice
+    produto-service:
+        build: ../../products # Path to the service Dockerfile
+        image: rodrigodip/produto-service:1.0.0
+        container_name: produto_service_app
+        ports:
+            - "${PRODUTOS_PORT_EXTERNAL}:8080"
+        environment:
+            - DB_HOST=postgres-db
+            - DB_PORT=5432
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/${PRODUTOS_DB_NAME}
+            - SPRING_DATASOURCE_USERNAME=${PRODUTOS_DB_USER}
+            - SPRING_DATASOURCE_PASSWORD=${PRODUTOS_DB_PASSWORD}
+        depends_on:
+            - postgres-db
+
+    # 3. Client Microservice
+    cliente-service:
+        build: ../../clients
+        image: rodrigodip/cliente-service:1.0.0
+        container_name: cliente_service_app
+        ports:
+            - "${CLIENTES_PORT_EXTERNAL}:8080"
+        environment:
+            - DB_HOST=postgres-db
+            - DB_PORT=5432
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/${CLIENTES_DB_NAME}
+            - SPRING_DATASOURCE_USERNAME=${CLIENTES_DB_USER}
+            - SPRING_DATASOURCE_PASSWORD=${CLIENTES_DB_PASSWORD}
+        depends_on:
+            - postgres-db

@@ -7,3 +7,4 @@
 services/database/data
 services/database/data_dev
 services/database/.env
+services/database/secrets

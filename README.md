@@ -4,6 +4,12 @@ Este repositório contém meus estudos e implementações práticas de **Arquite
 
 Ao longo do curso, será desenvolvido um sistema distribuído completo, aplicando conceitos e tecnologias utilizados em arquiteturas modernas de backend e ambientes corporativos.
 
+---
+
+**[🚀 Quick Start (PT-BR)](#-quick-start)** · **[🚀 Quick Start (EN)](#-quick-start-1)**
+
+---
+
 ## 🎯 Objetivos de Aprendizado
 
 O principal objetivo deste projeto é compreender como projetar, desenvolver, integrar e operar serviços independentes utilizando princípios de **Microservices Architecture** e **Event-Driven Architecture**.
@@ -95,6 +101,100 @@ As principais tecnologias e conceitos utilizados neste repositório são:
 - Webhooks
 - Event-Driven Architecture
 - Microservices Architecture
+
+## 🚀 Quick Start
+
+### Pré-requisitos
+
+- Docker e Docker Compose
+- Make
+- OpenSSL (para geração de senhas)
+
+### Comandos Disponíveis
+
+Execute `make help` para ver todos os comandos:
+
+| Comando               | Descrição                                     |
+| --------------------- | --------------------------------------------- |
+| `make create-secrets` | Cria secrets interativamente                  |
+| `make up`             | Sobe o stack de produção                      |
+| `make down`           | Para o stack de produção (preserva dados)     |
+| `make clean`          | Remove containers, dados e imagem do Postgres |
+| `make dev-up`         | Sobe o banco de desenvolvimento (porta 5555)  |
+| `make dev-down`       | Para o banco de desenvolvimento               |
+| `make dev-clean`      | Remove container e dados de desenvolvimento   |
+
+### Como os Secrets Funcionam
+
+**`.env` NÃO é onde os secrets ficam.** Isso é um equívoco comum.
+
+O arquivo `.env` fornece **valores padrão** para nomes de usuários e bancos de dados — não senhas. As senhas são geradas aleatoriamente pelo script `create-secrets`.
+
+O fluxo:
+
+```
+.env (padrões)  →  create-secrets.sh (interativo)  →  arquivos secrets/  →  Docker Compose
+```
+
+| Arquivo     | Conteúdo                          | No Git | Finalidade                                |
+| ----------- | --------------------------------- | ------ | ----------------------------------------- |
+| `.env`      | Nomes de usuários, DBs, portas    | Não    | Valores padrão oferecidos durante criação |
+| `secrets/*` | Todos os valores incluindo senhas | Não    | Secrets reais montados nos containers     |
+
+**O que o `.env` fornece:**
+
+- `DB_SUPER_USER=postgres` — nome padrão do superusuário
+- `PRODUTOS_DB_NAME=products` — nome padrão do banco de dados
+- `DB_PORT_EXTERNAL=5555` — mapeamento de portas
+
+**O que o `.env` NÃO contém:**
+
+- Senhas (geradas aleatoriamente, 32 caracteres)
+- Qualquer credencial sensível
+
+### Primeira Execução
+
+```bash
+# 1. (Opcional) Edite o .env com seus nomes de usuário/banco preferidos
+vim services/database/.env
+
+# 2. Crie os secrets interativamente
+make create-secrets
+
+# 3. Suba o stack
+make up
+```
+
+O script `create-secrets` vai:
+
+- Carregar o `.env` como valores padrão
+- Perguntar se você quer manter ou alterar cada nome de usuário e banco
+- Gerar senhas aleatórias de 32 caracteres automaticamente
+- Mostrar um resumo antes de criar qualquer coisa
+- Salvar todos os valores em `services/database/secrets/`
+
+### Uso no Dia a Dia
+
+**`make up` verifica os secrets automaticamente:**
+
+- Se os secrets não existem → oferece para criá-los
+- Se os secrets têm mais de 30 dias → oferece para recriar
+- Se os secrets estão atualizados → sobe o stack diretamente
+
+**Rotação manual de secrets:**
+
+```bash
+make create-secrets   # Execute novamente o script interativo
+make up              # Reinicie com os novos secrets
+```
+
+### Notas de Segurança
+
+- `.env` e `secrets/` estão no `.gitignore` — nunca são commitados
+- Senhas são geradas com `openssl rand` (32 caracteres)
+- Arquivos de secret têm `chmod 600` (somente leitura pelo proprietário)
+- Spring Boot lê os secrets de `/run/secrets/` via `configtree`
+- Secrets nunca aparecem em `docker inspect` ou variáveis de ambiente
 
 ## 🚀 O que espero aprender
 
@@ -199,6 +299,100 @@ The main technologies and tools covered in this repository include:
 - Webhooks
 - Event-Driven Architecture
 - Microservices Architecture
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Docker and Docker Compose
+- Make
+- OpenSSL (for password generation)
+
+### Available Commands
+
+Run `make help` to see all commands:
+
+| Command               | Description                                 |
+| --------------------- | ------------------------------------------- |
+| `make create-secrets` | Create secrets interactively                |
+| `make up`             | Start production stack                      |
+| `make down`           | Stop production stack (preserves data)      |
+| `make clean`          | Remove containers, data, and Postgres image |
+| `make dev-up`         | Start development database (port 5555)      |
+| `make dev-down`       | Stop development database                   |
+| `make dev-clean`      | Remove dev container and data               |
+
+### How Secrets Work
+
+**`.env` is NOT where secrets live.** This is a common misconception.
+
+The `.env` file provides **default values** for user names and database names — not passwords. Passwords are generated randomly by the `create-secrets` script.
+
+The flow:
+
+```
+.env (defaults)  →  create-secrets.sh (interactive)  →  secrets/ files  →  Docker Compose
+```
+
+| File        | Contains                       | In Git | Purpose                                |
+| ----------- | ------------------------------ | ------ | -------------------------------------- |
+| `.env`      | User names, DB names, ports    | No     | Default values offered during creation |
+| `secrets/*` | All values including passwords | No     | Actual secrets mounted into containers |
+
+**What `.env` provides:**
+
+- `DB_SUPER_USER=postgres` — default superuser name
+- `PRODUTOS_DB_NAME=products` — default database name
+- `DB_PORT_EXTERNAL=5555` — port mapping
+
+**What `.env` does NOT contain:**
+
+- Passwords (generated randomly, 32 chars)
+- Any sensitive credentials
+
+### First Time Setup
+
+```bash
+# 1. (Optional) Edit .env with your preferred user/db names
+vim services/database/.env
+
+# 2. Create secrets interactively
+make create-secrets
+
+# 3. Start the stack
+make up
+```
+
+The `create-secrets` script will:
+
+- Load `.env` as default values
+- Prompt you to confirm or change each user name and database name
+- Generate random 32-character passwords automatically
+- Show a summary before creating anything
+- Write all values to `services/database/secrets/`
+
+### Day-to-Day Usage
+
+**`make up` checks secrets automatically:**
+
+- If secrets are missing → offers to create them
+- If secrets are older than 30 days → offers to recreate
+- If secrets are fresh → starts the stack directly
+
+**Manual secret rotation:**
+
+```bash
+make create-secrets   # Re-run the interactive script
+make up              # Restart with new secrets
+```
+
+### Security Notes
+
+- `.env` and `secrets/` are gitignored — never committed
+- Passwords are generated with `openssl rand` (32 chars)
+- Secret files have `chmod 600` (owner read-only)
+- Spring Boot reads secrets from `/run/secrets/` via `configtree`
+- Secrets never appear in `docker inspect` or environment variables
 
 ## 🚀 What I Expect to Learn
 

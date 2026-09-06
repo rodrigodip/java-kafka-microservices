@@ -8,7 +8,7 @@ COMPOSE_DEV  = -f $(DB_PATH)/docker-compose-dev.yaml
 
 IMAGE_POSTGRES = postgres:18
 
-.PHONY: help up down clean dev-up dev-down dev-clean
+.PHONY: help up down clean dev-up dev-down dev-clean create-secrets check-secrets
 
 .DEFAULT_GOAL := help
 
@@ -18,8 +18,27 @@ help: ## Mostra esta tela de ajuda com os comandos disponíveis
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
 	@echo "--------------------------------"
 
+# --- SECRETS ---
+check-secrets: ## Verifica se existem secrets e se estão atualizados
+	@if [ ! -f $(DB_PATH)/secrets/db_super_password ]; then \
+		echo "Secrets not found."; \
+		read -p "Create secrets now? (Y/n): " -n 1 -r; echo; \
+		if [ "$$REPLY" != "N" ] && [ "$$REPLY" != "n" ]; then \
+			bash $(DB_PATH)/create-secrets.sh; \
+		fi; \
+	elif [ $$(( ( $$(date +%s) - $$(stat -c %Y $(DB_PATH)/secrets/db_super_password) ) / 86400 )) -gt 30 ]; then \
+		echo "Secrets are older than 30 days."; \
+		read -p "Recreate secrets? (y/N): " -n 1 -r; echo; \
+		if [ "$$REPLY" = "y" ] || [ "$$REPLY" = "Y" ]; then \
+			bash $(DB_PATH)/create-secrets.sh; \
+		fi; \
+	fi
+
+create-secrets: ## Cria secrets interativamente (usuários, senhas geradas randomicamente)
+	bash $(DB_PATH)/create-secrets.sh
+
 # --- AMBIENTE PRINCIPAL (PROD) ---
-up: ## Sobe os containers de produção em segundo plano
+up: check-secrets ## Sobe os containers de produção em segundo plano
 	$(COMPOSE) $(COMPOSE_PROD) up -d
 
 down: ## Apenas para os containers de produção (PRESERVA OS DADOS)

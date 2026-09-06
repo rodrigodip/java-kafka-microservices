@@ -3,13 +3,22 @@ services:
         image: postgres:18
         container_name: postgres_dev_container
         shm_size: 128mb
+        entrypoint: >
+            sh -c "chmod +x /docker-entrypoint-initdb.d/init-wrapper.sh
+            && exec /usr/local/bin/docker-entrypoint.sh postgres"
         environment:
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: super_senha_geral
             POSTGRES_DB: default_db
+            PRODUTOS_DB_USER: product_user
+            PRODUTOS_DB_PASSWORD: senha_produtos_123
+            PRODUTOS_DB_NAME: products
+            CLIENTES_DB_USER: client_user
+            CLIENTES_DB_PASSWORD: senha_clientes_123
+            CLIENTES_DB_NAME: clients
         ports:
-            - "5555:5432" # Expõe a 5555 para a sua máquina física conectar
+            - "5555:5432"
         volumes:
             - ./data_dev:/var/lib/postgresql
-            - ./init-dbs.sql:/docker-entrypoint-initdb.d/init-dbs.sql:ro
+            - ./init-wrapper.sh:/docker-entrypoint-initdb.d/init-wrapper.sh
         restart: unless-stopped

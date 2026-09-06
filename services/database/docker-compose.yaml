@@ -1,41 +1,55 @@
-# This docker-compose file is used to set up a PostgreSQL database container
-
 services:
-    # 1. Centralized Database Server (Postgres 18)
     postgres-db:
         image: postgres:18
         container_name: postgres_container
-        # Postgres recommended shared memory limit
         shm_size: 128mb
+        entrypoint: >
+            sh -c "chmod +x /docker-entrypoint-initdb.d/init-wrapper.sh 
+            && exec /usr/local/bin/docker-entrypoint.sh postgres"
         environment:
-            POSTGRES_USER: ${DB_SUPER_USER} # Superuser for the database
-            POSTGRES_PASSWORD: ${DB_SUPER_PASSWORD}
-            POSTGRES_DB: ${DB_DEFAULT_NAME}
+            POSTGRES_USER_FILE: /run/secrets/db_super_user
+            POSTGRES_PASSWORD_FILE: /run/secrets/db_super_password
+            POSTGRES_DB_FILE: /run/secrets/db_default_name
         ports:
             - "${DB_PORT_EXTERNAL}:5432"
         volumes:
             - ./data:/var/lib/postgresql
-            # Executes the SQL script to create users and databases for different services (clients, products, etc.)
-            - ./init-dbs.sql:/docker-entrypoint-initdb.d/init-dbs.sql:ro
+            - ./init-wrapper.sh:/docker-entrypoint-initdb.d/init-wrapper.sh
+        secrets:
+            - db_super_user
+            - db_super_password
+            - db_default_name
+            - produtos_db_user
+            - produtos_db_password
+            - produtos_db_name
+            - clientes_db_user
+            - clientes_db_password
+            - clientes_db_name
         restart: unless-stopped
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 15s
 
-    # 2. Product Microservice
     produto-service:
-        build: ../../products # Path to the service Dockerfile
+        build: ../../products
         image: rodrigodip/produto-service:1.0.0
         container_name: produto_service_app
         ports:
             - "${PRODUTOS_PORT_EXTERNAL}:8080"
         environment:
-            - DB_HOST=postgres-db
-            - DB_PORT=5432
-            - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/${PRODUTOS_DB_NAME}
-            - SPRING_DATASOURCE_USERNAME=${PRODUTOS_DB_USER}
-            - SPRING_DATASOURCE_PASSWORD=${PRODUTOS_DB_PASSWORD}
+            DB_HOST: postgres-db
+            DB_PORT: "5432"
+        secrets:
+            - produtos_db_user
+            - produtos_db_password
+            - produtos_db_name
         depends_on:
-            - postgres-db
+            postgres-db:
+                condition: service_healthy
 
-    # 3. Client Microservice
     cliente-service:
         build: ../../clients
         image: rodrigodip/cliente-service:1.0.0
@@ -43,10 +57,32 @@ services:
         ports:
             - "${CLIENTES_PORT_EXTERNAL}:8080"
         environment:
-            - DB_HOST=postgres-db
-            - DB_PORT=5432
-            - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/${CLIENTES_DB_NAME}
-            - SPRING_DATASOURCE_USERNAME=${CLIENTES_DB_USER}
-            - SPRING_DATASOURCE_PASSWORD=${CLIENTES_DB_PASSWORD}
+            DB_HOST: postgres-db
+            DB_PORT: "5432"
+        secrets:
+            - clientes_db_user
+            - clientes_db_password
+            - clientes_db_name
         depends_on:
-            - postgres-db
+            postgres-db:
+                condition: service_healthy
+
+secrets:
+    db_super_user:
+        file: ./secrets/db_super_user
+    db_super_password:
+        file: ./secrets/db_super_password
+    db_default_name:
+        file: ./secrets/db_default_name
+    produtos_db_user:
+        file: ./secrets/produtos_db_user
+    produtos_db_password:
+        file: ./secrets/produtos_db_password
+    produtos_db_name:
+        file: ./secrets/produtos_db_name
+    clientes_db_user:
+        file: ./secrets/clientes_db_user
+    clientes_db_password:
+        file: ./secrets/clientes_db_password
+    clientes_db_name:
+        file: ./secrets/clientes_db_name

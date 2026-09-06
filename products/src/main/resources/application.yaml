@@ -1,17 +1,13 @@
-#
-# --- PRODUCTS MICROSERVICE ---
-#
 spring:
+    config:
+        import: "optional:configtree:/run/secrets/"
     application:
         name: products
-    # PostgreSQL Configuration
     datasource:
-        url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5555/products}
-        username: ${SPRING_DATASOURCE_USERNAME:user_produtos}
-        password: ${SPRING_DATASOURCE_PASSWORD:senha_produtos_123}
+        url: "jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5555}/${produtos_db_name:products}"
+        username: "${produtos_db_user:product_user}"
+        password: "${produtos_db_password:senha_produtos_123}"
         driver-class-name: org.postgresql.Driver
-
-    # Hibernate/JPA Configuration
     jpa:
         database-platform: org.hibernate.dialect.PostgreSQLDialect
         hibernate:
@@ -20,8 +16,6 @@ spring:
         properties:
             hibernate:
                 format_sql: true
-
-    # Flyway Configuration
     flyway:
         enabled: true
         baseline-on-migrate: true

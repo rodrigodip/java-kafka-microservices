@@ -4,7 +4,7 @@
 
 ### PostgreSQL ###
 *.backup
-services/database/data
-services/database/data_dev
-services/database/.env
-services/database/secrets
+infra/data
+infra/data_dev
+infra/secrets
+.env

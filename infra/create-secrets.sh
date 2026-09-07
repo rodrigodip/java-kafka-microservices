@@ -7,7 +7,7 @@ set -e
 # --- Configuration ---
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SECRETS_DIR="$SCRIPT_DIR/secrets"
-ENV_FILE="$SCRIPT_DIR/.env"
+ENV_FILE="$SCRIPT_DIR/../.env"
 
 # Color codes
 RED='\033[0;31m'

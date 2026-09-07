@@ -156,7 +156,7 @@ O fluxo:
 
 ```bash
 # 1. (Opcional) Edite o .env com seus nomes de usuário/banco preferidos
-vim services/database/.env
+vim infra/.env
 
 # 2. Crie os secrets interativamente
 make create-secrets
@@ -171,7 +171,7 @@ O script `create-secrets` vai:
 - Perguntar se você quer manter ou alterar cada nome de usuário e banco
 - Gerar senhas aleatórias de 32 caracteres automaticamente
 - Mostrar um resumo antes de criar qualquer coisa
-- Salvar todos os valores em `services/database/secrets/`
+- Salvar todos os valores em `infra/secrets/`
 
 ### Uso no Dia a Dia
 
@@ -354,7 +354,7 @@ The flow:
 
 ```bash
 # 1. (Optional) Edit .env with your preferred user/db names
-vim services/database/.env
+vim infra/.env
 
 # 2. Create secrets interactively
 make create-secrets
@@ -369,7 +369,7 @@ The `create-secrets` script will:
 - Prompt you to confirm or change each user name and database name
 - Generate random 32-character passwords automatically
 - Show a summary before creating anything
-- Write all values to `services/database/secrets/`
+- Write all values to `infra/secrets/`
 
 ### Day-to-Day Usage
 

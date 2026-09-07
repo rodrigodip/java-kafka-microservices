@@ -2,9 +2,9 @@
 DOCKER_CMD = sudo docker
 COMPOSE    = $(DOCKER_CMD) compose
 
-DB_PATH      = ./services/database
-COMPOSE_PROD = -f $(DB_PATH)/docker-compose.yaml
-COMPOSE_DEV  = -f $(DB_PATH)/docker-compose-dev.yaml
+SECRETS_PATH  = ./infra
+COMPOSE_PROD  = -f docker-compose.yaml
+COMPOSE_DEV   = -f docker-compose-dev.yaml
 
 IMAGE_POSTGRES = postgres:18
 
@@ -20,22 +20,22 @@ help: ## Mostra esta tela de ajuda com os comandos disponíveis
 
 # --- SECRETS ---
 check-secrets: ## Verifica se existem secrets e se estão atualizados
-	@if [ ! -f $(DB_PATH)/secrets/db_super_password ]; then \
+	@if [ ! -f $(SECRETS_PATH)/secrets/db_super_password ]; then \
 		echo "Secrets not found."; \
 		read -p "Create secrets now? (Y/n): " -n 1 -r; echo; \
 		if [ "$$REPLY" != "N" ] && [ "$$REPLY" != "n" ]; then \
-			bash $(DB_PATH)/create-secrets.sh; \
+			bash infra/create-secrets.sh; \
 		fi; \
-	elif [ $$(( ( $$(date +%s) - $$(stat -c %Y $(DB_PATH)/secrets/db_super_password) ) / 86400 )) -gt 30 ]; then \
+	elif [ $$(( ( $$(date +%s) - $$(stat -c %Y $(SECRETS_PATH)/secrets/db_super_password) ) / 86400 )) -gt 30 ]; then \
 		echo "Secrets are older than 30 days."; \
 		read -p "Recreate secrets? (y/N): " -n 1 -r; echo; \
 		if [ "$$REPLY" = "y" ] || [ "$$REPLY" = "Y" ]; then \
-			bash $(DB_PATH)/create-secrets.sh; \
+			bash infra/create-secrets.sh; \
 		fi; \
 	fi
 
 create-secrets: ## Cria secrets interativamente (usuários, senhas geradas randomicamente)
-	bash $(DB_PATH)/create-secrets.sh
+	bash infra/create-secrets.sh
 
 # --- AMBIENTE PRINCIPAL (PROD) ---
 up: check-secrets ## Sobe os containers de produção em segundo plano
@@ -46,7 +46,7 @@ down: ## Apenas para os containers de produção (PRESERVA OS DADOS)
 
 clean: ## Destrutivo: Remove containers, apaga a pasta 'data' e a imagem Postgres
 	$(COMPOSE) $(COMPOSE_PROD) down -v
-	sudo rm -rf $(DB_PATH)/data
+	sudo rm -rf $(SECRETS_PATH)/data
 	-$(DOCKER_CMD) rmi $(IMAGE_POSTGRES) 2>/dev/null || true
 
 # --- AMBIENTE DE DESENVOLVIMENTO (DEV) ---
@@ -58,5 +58,5 @@ dev-down: ## Apenas para o container-dev (PRESERVA OS DADOS DE TESTE)
 
 dev-clean: ## Destrutivo: Remove o container-dev, apaga a pasta 'data_dev' e a imagem Postgres
 	$(COMPOSE) $(COMPOSE_DEV) down -v
-	sudo rm -rf $(DB_PATH)/data_dev
+	sudo rm -rf $(SECRETS_PATH)/data_dev
 	-$(DOCKER_CMD) rmi $(IMAGE_POSTGRES) 2>/dev/null || true

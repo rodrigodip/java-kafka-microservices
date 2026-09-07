@@ -38,16 +38,15 @@ create-secrets: ## Cria secrets interativamente (usuários, senhas geradas rando
 	bash infra/create-secrets.sh
 
 # --- AMBIENTE PRINCIPAL (PROD) ---
-up: check-secrets ## Sobe os containers de produção em segundo plano
-	$(COMPOSE) $(COMPOSE_PROD) up -d
+up: check-secrets ## Sobe os containers de produção em segundo plano (rebuild sempre)
+	$(COMPOSE) $(COMPOSE_PROD) up -d --build
 
 down: ## Apenas para os containers de produção (PRESERVA OS DADOS)
 	$(COMPOSE) $(COMPOSE_PROD) down
 
-clean: ## Destrutivo: Remove containers, apaga a pasta 'data' e a imagem Postgres
-	$(COMPOSE) $(COMPOSE_PROD) down -v
+clean: ## Destrutivo: Remove containers, volumes, todas as imagens e os dados
+	$(COMPOSE) $(COMPOSE_PROD) down -v --rmi all
 	sudo rm -rf $(SECRETS_PATH)/data
-	-$(DOCKER_CMD) rmi $(IMAGE_POSTGRES) 2>/dev/null || true
 
 # --- AMBIENTE DE DESENVOLVIMENTO (DEV) ---
 dev-up: ## Sobe o banco de desenvolvimento local (Porta 5555)

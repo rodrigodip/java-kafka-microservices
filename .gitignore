@@ -8,3 +8,6 @@ infra/data
 infra/data_dev
 infra/secrets
 .env
+
+### API-Client ###
+.bruno-api-client

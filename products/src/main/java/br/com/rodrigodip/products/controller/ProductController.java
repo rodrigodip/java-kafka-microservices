@@ -1,5 +1,7 @@
 package br.com.rodrigodip.products.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,8 +27,8 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<ProductResponse> saveProduct(@Valid @RequestBody ProductRequest request) {
-        ProductResponse response = productService.save(request);
 
+        ProductResponse response = productService.save(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
@@ -38,4 +40,9 @@ public class ProductController {
         return ResponseEntity.ok(product);
     }
 
+    @GetMapping
+    public ResponseEntity<List<ProductResponse>> findAll() {
+        List<ProductResponse> productList = productService.findAll();
+        return ResponseEntity.ok(productList);
+    }
 }

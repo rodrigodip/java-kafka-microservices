@@ -1,5 +1,8 @@
 package br.com.rodrigodip.products.services;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import br.com.rodrigodip.products.dto.ProductRequest;
@@ -33,9 +36,25 @@ public class ProductService {
     public ProductResponse findById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
+
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
                 product.getPrice());
+    }
+
+    public List<ProductResponse> findAll() {
+        List<Product> productList = productRepository.findAll();
+        List<ProductResponse> responseList = new ArrayList<>();
+
+        for (Product product : productList) {
+            ProductResponse response = new ProductResponse(
+                    product.getId(),
+                    product.getName(),
+                    product.getPrice());
+
+            responseList.add(response);
+        }
+        return responseList;
     }
 }

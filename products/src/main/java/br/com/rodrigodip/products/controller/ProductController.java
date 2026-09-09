@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.rodrigodip.products.dto.ProductRequest;
 import br.com.rodrigodip.products.dto.ProductResponse;
-import br.com.rodrigodip.products.services.ProductService;
+import br.com.rodrigodip.products.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 

@@ -1,4 +1,4 @@
-package br.com.rodrigodip.products.entities;
+package br.com.rodrigodip.products.entity;
 
 import java.math.BigDecimal;
 

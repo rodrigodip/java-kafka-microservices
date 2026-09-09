@@ -1,4 +1,4 @@
-package br.com.rodrigodip.products.services;
+package br.com.rodrigodip.products.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 
 import br.com.rodrigodip.products.dto.ProductRequest;
 import br.com.rodrigodip.products.dto.ProductResponse;
-import br.com.rodrigodip.products.entities.Product;
+import br.com.rodrigodip.products.entity.Product;
 import br.com.rodrigodip.products.exceptions.ProductNotFoundException;
-import br.com.rodrigodip.products.repositories.ProductRepository;
+import br.com.rodrigodip.products.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service

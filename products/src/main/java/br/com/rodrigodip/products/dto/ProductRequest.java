@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
 
 public record ProductRequest(
 
-		@NotBlank @Size(max = 10) String name,
+		@NotBlank @Size(max = 100) String name,
 
 		@NotNull @Digits(integer = 9, fraction = 2) @DecimalMin(value = "0.0", inclusive = false) BigDecimal price) {
 }

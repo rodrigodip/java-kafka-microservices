@@ -20,10 +20,9 @@ public class ProductService {
 
     public ProductResponse save(ProductRequest request) {
 
-        Product product = new Product();
-
-        product.setName(request.name());
-        product.setPrice(request.price());
+        Product product = new Product(
+                request.name(),
+                request.price());
 
         Product savedProduct = productRepository.save(product);
 

@@ -8,15 +8,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
-@Setter
 @Getter
 @Entity
 @Table(name = "products")
-@Data
+@NoArgsConstructor
 public class Product {
 
     @Id
@@ -28,4 +26,11 @@ public class Product {
 
     @Column(name = "unit_price", nullable = false, precision = 16, scale = 2)
     private BigDecimal price;
+
+    public Product(
+            String name,
+            BigDecimal price) {
+        this.name = name;
+        this.price = price;
+    }
 }

@@ -7,13 +7,18 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "order_items")
 @Getter
+@Setter
 @NoArgsConstructor
 public class OrderItem {
 
@@ -21,8 +26,9 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "order_id", nullable = false)
-    private long orderId;
+    @JoinColumn(name = "order_id", nullable = false)
+    @ManyToOne
+    private Order order;
 
     @Column(name = "product_id", nullable = false)
     private Long productId;
@@ -30,6 +36,7 @@ public class OrderItem {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
+    @NotNull
     @Column(name = "unit_price", nullable = false, precision = 16, scale = 2)
     private BigDecimal unitPrice;
 }

@@ -1,9 +1,11 @@
 package br.com.rodrigodip.orders.entity;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import br.com.rodrigodip.orders.enums.OrderStatus;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,14 +13,20 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "orders")
 @Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Order {
 
     @Id
@@ -27,10 +35,10 @@ public class Order {
     private Long id;
 
     @Column(name = "client_id", nullable = false)
-    private Long customerId;
+    private Long clientId;
 
     @Column(name = "order_date", nullable = false)
-    private OffsetDateTime placedAt;
+    private LocalDateTime placedAt;
 
     @Column(name = "payment_key")
     private String paymentKey;
@@ -51,4 +59,23 @@ public class Order {
     @Column(name = "invoice_url")
     private String invoiceUrl;
 
+    @Transient
+    private PaymentData paymentData;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> itensList;
+
+    public void place() {
+        this.status = OrderStatus.PLACED;
+        this.placedAt = LocalDateTime.now();
+        this.itensList.forEach(item -> item.setOrder(this));
+        this.total = calculateTotal();
+    }
+
+    private BigDecimal calculateTotal() {
+        return itensList.stream()
+                .map(item -> item.getUnitPrice()
+                        .multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 }

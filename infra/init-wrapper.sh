@@ -14,11 +14,15 @@ if [ -f /run/secrets/produtos_db_user ]; then
     CLIENTES_DB_USER=$(cat /run/secrets/clientes_db_user)
     CLIENTES_DB_PASSWORD=$(cat /run/secrets/clientes_db_password)
     CLIENTES_DB_NAME=$(cat /run/secrets/clientes_db_name)
+    ORDERS_DB_USER=$(cat /run/secrets/orders_db_user)
+    ORDERS_DB_PASSWORD=$(cat /run/secrets/orders_db_password)
+    ORDERS_DB_NAME=$(cat /run/secrets/orders_db_name)
 else
     echo "Reading credentials from environment variables..."
     # Use env vars already set by docker-compose environment:
     # PRODUTOS_DB_USER, PRODUTOS_DB_PASSWORD, PRODUTOS_DB_NAME
     # CLIENTES_DB_USER, CLIENTES_DB_PASSWORD, CLIENTES_DB_NAME
+    # ORDERS_DB_USER, ORDERS_DB_PASSWORD, ORDERS_DB_NAME
     :
 fi
 
@@ -31,14 +35,17 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     -- 1. Create Users
     CREATE USER "$PRODUTOS_DB_USER" WITH PASSWORD '$PRODUTOS_DB_PASSWORD';
     CREATE USER "$CLIENTES_DB_USER" WITH PASSWORD '$CLIENTES_DB_PASSWORD';
+    CREATE USER "$ORDERS_DB_USER" WITH PASSWORD '$ORDERS_DB_PASSWORD';
 
     -- 2. Create Databases with respective owners
     CREATE DATABASE "$PRODUTOS_DB_NAME" OWNER "$PRODUTOS_DB_USER";
     CREATE DATABASE "$CLIENTES_DB_NAME" OWNER "$CLIENTES_DB_USER";
+    CREATE DATABASE "$ORDERS_DB_NAME" OWNER "$ORDERS_DB_USER";
 
     -- 3. Grant Privileges
     GRANT ALL PRIVILEGES ON DATABASE "$PRODUTOS_DB_NAME" TO "$PRODUTOS_DB_USER";
     GRANT ALL PRIVILEGES ON DATABASE "$CLIENTES_DB_NAME" TO "$CLIENTES_DB_USER";
+    GRANT ALL PRIVILEGES ON DATABASE "$ORDERS_DB_NAME" TO "$ORDERS_DB_USER";
 EOSQL
 
 echo "========================================================================="

@@ -25,6 +25,9 @@ services:
             - clientes_db_user
             - clientes_db_password
             - clientes_db_name
+            - orders_db_user
+            - orders_db_password
+            - orders_db_name
         restart: unless-stopped
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -86,3 +89,9 @@ secrets:
         file: ./infra/secrets/clientes_db_password
     clientes_db_name:
         file: ./infra/secrets/clientes_db_name
+    orders_db_user:
+        file: ./infra/secrets/orders_db_user
+    orders_db_password:
+        file: ./infra/secrets/orders_db_password
+    orders_db_name:
+        file: ./infra/secrets/orders_db_name

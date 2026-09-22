@@ -90,6 +90,12 @@ main() {
     CLIENTES_DB_PASSWORD=$(generate_password)
     CLIENTES_DB_NAME=$(prompt_with_default "CLIENTES_DB_NAME" "clientes_db_name" "$CLIENTES_DB_NAME")
 
+    # --- Orders Database ---
+    echo -e "\n${BLUE}Orders Database${NC}" >&2
+    ORDERS_DB_USER=$(prompt_with_default "ORDERS_DB_USER" "orders_db_user" "$ORDERS_DB_USER")
+    ORDERS_DB_PASSWORD=$(generate_password)
+    ORDERS_DB_NAME=$(prompt_with_default "ORDERS_DB_NAME" "orders_db_name" "$ORDERS_DB_NAME")
+
     # --- Summary ---
     echo -e "\n${BLUE}========================================${NC}" >&2
     echo -e "${BLUE}  Secret Summary${NC}" >&2
@@ -100,6 +106,8 @@ main() {
     echo -e "  PRODUTOS_DB_NAME:  ${GREEN}${PRODUTOS_DB_NAME}${NC}" >&2
     echo -e "  CLIENTES_DB_USER:  ${GREEN}${CLIENTES_DB_USER}${NC}" >&2
     echo -e "  CLIENTES_DB_NAME:  ${GREEN}${CLIENTES_DB_NAME}${NC}" >&2
+    echo -e "  ORDERS_DB_USER:  ${GREEN}${ORDERS_DB_USER}${NC}" >&2
+    echo -e "  ORDERS_DB_NAME:  ${GREEN}${ORDERS_DB_NAME}${NC}" >&2
     echo -e "  ${YELLOW}(Passwords will be generated randomly)${NC}" >&2
     echo -e "${BLUE}========================================${NC}" >&2
 
@@ -125,6 +133,10 @@ main() {
     create_file_secret "clientes_db_user"     "$CLIENTES_DB_USER"
     create_file_secret "clientes_db_password" "$CLIENTES_DB_PASSWORD"
     create_file_secret "clientes_db_name"     "$CLIENTES_DB_NAME"
+
+    create_file_secret "orders_db_user"     "$ORDERS_DB_USER"
+    create_file_secret "orders_db_password" "$ORDERS_DB_PASSWORD"
+    create_file_secret "orders_db_name"     "$ORDERS_DB_NAME"
 
     echo -e "\n${GREEN}All secrets created in ${SECRETS_DIR}/${NC}" >&2
     echo -e "${BLUE}Run 'make up' to start the stack.${NC}\n" >&2

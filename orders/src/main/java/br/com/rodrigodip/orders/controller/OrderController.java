@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @RestController
-@RequestMapping("/Orders")
+@RequestMapping("/orders")
 @RequiredArgsConstructor
 public class OrderController {
 

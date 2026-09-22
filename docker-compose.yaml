@@ -70,6 +70,23 @@ services:
             postgres-db:
                 condition: service_healthy
 
+    order-service:
+        build: ./orders
+        image: rodrigodip/orders-service:1.0.0
+        container_name: order_service_app
+        ports:
+            - "${ORDERS_PORT_EXTERNAL}:8083"
+        environment:
+            DB_HOST: postgres-db
+            DB_PORT: "5432"
+        secrets:
+            - orders_db_user
+            - orders_db_password
+            - orders_db_name
+        depends_on:
+            postgres-db:
+                condition: service_healthy
+
 secrets:
     db_super_user:
         file: ./infra/secrets/db_super_user

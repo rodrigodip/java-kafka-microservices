@@ -1,0 +1,22 @@
+spring:
+    config:
+        import: "optional:configtree:/run/secrets/"
+    application:
+        name: orders
+    datasource:
+        url: "jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5555}/${orders_db_name:orders}"
+        username: "${orders_db_user:order_user}"
+        password: "${orders_db_password:senha_orders_123}"
+        driver-class-name: org.postgresql.Driver
+    jpa:
+        hibernate:
+            ddl-auto: none
+        show-sql: true
+        properties:
+            hibernate:
+                "[format_sql]": true
+    flyway:
+        enabled: true
+        baseline-on-migrate: true
+server:
+    port: 8083

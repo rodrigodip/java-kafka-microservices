@@ -1,9 +1,11 @@
 package br.com.rodrigodip.orders.dto;
 
-import java.math.BigDecimal;
+import java.util.List;
+
+import br.com.rodrigodip.orders.entity.PaymentData;
 
 public record OrderRequest(
-		Long productId,
-		Integer quantity,
-		BigDecimal unitPrice) {
+		Long clientId,
+		PaymentData paymentData,
+		List<OrderItemRequest> itensList) {
 }

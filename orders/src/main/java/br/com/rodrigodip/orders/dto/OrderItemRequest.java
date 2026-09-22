@@ -2,7 +2,7 @@ package br.com.rodrigodip.orders.dto;
 
 import java.math.BigDecimal;
 
-public record OrderItemResponse(
+public record OrderItemRequest(
         Long productId,
         Integer quantity,
         BigDecimal unitPrice) {

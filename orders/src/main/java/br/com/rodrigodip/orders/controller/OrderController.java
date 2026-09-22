@@ -1,5 +1,7 @@
 package br.com.rodrigodip.orders.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +15,8 @@ import br.com.rodrigodip.orders.service.OrderService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/orders")
@@ -33,4 +37,18 @@ public class OrderController {
                 .body(mapper.toResponse(savedOrder));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderResponse> findById(@PathVariable Long id) {
+        OrderResponse response = mapper.toResponse(orderService.findById(id));
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<OrderResponse>> findAll() {
+
+        List<OrderResponse> ordersList = orderService.findAll()
+                .stream().map(order -> mapper.toResponse(order)).toList();
+
+        return ResponseEntity.ok(ordersList);
+    }
 }

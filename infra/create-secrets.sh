@@ -80,15 +80,15 @@ main() {
 
     # --- Products Database ---
     echo -e "\n${BLUE}Products Database${NC}" >&2
-    PRODUTOS_DB_USER=$(prompt_with_default "PRODUTOS_DB_USER" "produtos_db_user" "$PRODUTOS_DB_USER")
-    PRODUTOS_DB_PASSWORD=$(generate_password)
-    PRODUTOS_DB_NAME=$(prompt_with_default "PRODUTOS_DB_NAME" "produtos_db_name" "$PRODUTOS_DB_NAME")
+    PRODUCTS_DB_USER=$(prompt_with_default "PRODUCTS_DB_USER" "products_db_user" "$PRODUCTS_DB_USER")
+    PRODUCTS_DB_PASSWORD=$(generate_password)
+    PRODUCTS_DB_NAME=$(prompt_with_default "PRODUCTS_DB_NAME" "products_db_name" "$PRODUCTS_DB_NAME")
 
     # --- Clients Database ---
     echo -e "\n${BLUE}Clients Database${NC}" >&2
-    CLIENTES_DB_USER=$(prompt_with_default "CLIENTES_DB_USER" "clientes_db_user" "$CLIENTES_DB_USER")
-    CLIENTES_DB_PASSWORD=$(generate_password)
-    CLIENTES_DB_NAME=$(prompt_with_default "CLIENTES_DB_NAME" "clientes_db_name" "$CLIENTES_DB_NAME")
+    CLIENTS_DB_USER=$(prompt_with_default "CLIENTS_DB_USER" "clients_db_user" "$CLIENTS_DB_USER")
+    CLIENTS_DB_PASSWORD=$(generate_password)
+    CLIENTS_DB_NAME=$(prompt_with_default "CLIENTS_DB_NAME" "clients_db_name" "$CLIENTS_DB_NAME")
 
     # --- Orders Database ---
     echo -e "\n${BLUE}Orders Database${NC}" >&2
@@ -102,10 +102,10 @@ main() {
     echo -e "${BLUE}========================================${NC}" >&2
     echo -e "  DB_SUPER_USER:     ${GREEN}${DB_SUPER_USER}${NC}" >&2
     echo -e "  DB_DEFAULT_NAME:   ${GREEN}${DB_DEFAULT_NAME}${NC}" >&2
-    echo -e "  PRODUTOS_DB_USER:  ${GREEN}${PRODUTOS_DB_USER}${NC}" >&2
-    echo -e "  PRODUTOS_DB_NAME:  ${GREEN}${PRODUTOS_DB_NAME}${NC}" >&2
-    echo -e "  CLIENTES_DB_USER:  ${GREEN}${CLIENTES_DB_USER}${NC}" >&2
-    echo -e "  CLIENTES_DB_NAME:  ${GREEN}${CLIENTES_DB_NAME}${NC}" >&2
+    echo -e "  PRODUCTS_DB_USER:  ${GREEN}${PRODUCTS_DB_USER}${NC}" >&2
+    echo -e "  PRODUCTS_DB_NAME:  ${GREEN}${PRODUCTS_DB_NAME}${NC}" >&2
+    echo -e "  CLIENTS_DB_USER:  ${GREEN}${CLIENTS_DB_USER}${NC}" >&2
+    echo -e "  CLIENTS_DB_NAME:  ${GREEN}${CLIENTS_DB_NAME}${NC}" >&2
     echo -e "  ORDERS_DB_USER:  ${GREEN}${ORDERS_DB_USER}${NC}" >&2
     echo -e "  ORDERS_DB_NAME:  ${GREEN}${ORDERS_DB_NAME}${NC}" >&2
     echo -e "  ${YELLOW}(Passwords will be generated randomly)${NC}" >&2
@@ -126,13 +126,13 @@ main() {
     create_file_secret "db_super_password"   "$DB_SUPER_PASSWORD"
     create_file_secret "db_default_name"     "$DB_DEFAULT_NAME"
 
-    create_file_secret "produtos_db_user"     "$PRODUTOS_DB_USER"
-    create_file_secret "produtos_db_password" "$PRODUTOS_DB_PASSWORD"
-    create_file_secret "produtos_db_name"     "$PRODUTOS_DB_NAME"
+    create_file_secret "products_db_user"     "$PRODUCTS_DB_USER"
+    create_file_secret "products_db_password" "$PRODUCTS_DB_PASSWORD"
+    create_file_secret "products_db_name"     "$PRODUCTS_DB_NAME"
 
-    create_file_secret "clientes_db_user"     "$CLIENTES_DB_USER"
-    create_file_secret "clientes_db_password" "$CLIENTES_DB_PASSWORD"
-    create_file_secret "clientes_db_name"     "$CLIENTES_DB_NAME"
+    create_file_secret "clients_db_user"     "$CLIENTS_DB_USER"
+    create_file_secret "clients_db_password" "$CLIENTS_DB_PASSWORD"
+    create_file_secret "clients_db_name"     "$CLIENTS_DB_NAME"
 
     create_file_secret "orders_db_user"     "$ORDERS_DB_USER"
     create_file_secret "orders_db_password" "$ORDERS_DB_PASSWORD"

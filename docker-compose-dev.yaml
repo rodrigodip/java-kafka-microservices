@@ -10,12 +10,12 @@ services:
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: super_senha_geral
             POSTGRES_DB: default_db
-            PRODUTOS_DB_USER: product_user
-            PRODUTOS_DB_PASSWORD: senha_produtos_123
-            PRODUTOS_DB_NAME: products
-            CLIENTES_DB_USER: client_user
-            CLIENTES_DB_PASSWORD: senha_clientes_123
-            CLIENTES_DB_NAME: clients
+            PRODUCTS_DB_USER: product_user
+            PRODUCTS_DB_PASSWORD: senha_products_123
+            PRODUCTS_DB_NAME: products
+            CLIENTS_DB_USER: client_user
+            CLIENTS_DB_PASSWORD: senha_clients_123
+            CLIENTS_DB_NAME: clients
         ports:
             - "5555:5432"
         volumes:

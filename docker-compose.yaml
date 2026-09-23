@@ -19,12 +19,12 @@ services:
             - db_super_user
             - db_super_password
             - db_default_name
-            - produtos_db_user
-            - produtos_db_password
-            - produtos_db_name
-            - clientes_db_user
-            - clientes_db_password
-            - clientes_db_name
+            - products_db_user
+            - products_db_password
+            - products_db_name
+            - clients_db_user
+            - clients_db_password
+            - clients_db_name
             - orders_db_user
             - orders_db_password
             - orders_db_name
@@ -36,36 +36,36 @@ services:
             retries: 5
             start_period: 15s
 
-    produto-service:
+    product-service:
         build: ./products
-        image: rodrigodip/produto-service:1.0.0
-        container_name: produto_service_app
+        image: rodrigodip/product-service:1.0.0
+        container_name: product_service_app
         ports:
-            - "${PRODUTOS_PORT_EXTERNAL}:8081"
+            - "${PRODUCTS_PORT_EXTERNAL}:8081"
         environment:
             DB_HOST: postgres-db
             DB_PORT: "5432"
         secrets:
-            - produtos_db_user
-            - produtos_db_password
-            - produtos_db_name
+            - products_db_user
+            - products_db_password
+            - products_db_name
         depends_on:
             postgres-db:
                 condition: service_healthy
 
-    cliente-service:
+    client-service:
         build: ./clients
-        image: rodrigodip/cliente-service:1.0.0
-        container_name: cliente_service_app
+        image: rodrigodip/clients-service:1.0.0
+        container_name: client_service_app
         ports:
-            - "${CLIENTES_PORT_EXTERNAL}:8082"
+            - "${CLIENTS_PORT_EXTERNAL}:8082"
         environment:
             DB_HOST: postgres-db
             DB_PORT: "5432"
         secrets:
-            - clientes_db_user
-            - clientes_db_password
-            - clientes_db_name
+            - clients_db_user
+            - clients_db_password
+            - clients_db_name
         depends_on:
             postgres-db:
                 condition: service_healthy
@@ -94,18 +94,18 @@ secrets:
         file: ./infra/secrets/db_super_password
     db_default_name:
         file: ./infra/secrets/db_default_name
-    produtos_db_user:
-        file: ./infra/secrets/produtos_db_user
-    produtos_db_password:
-        file: ./infra/secrets/produtos_db_password
-    produtos_db_name:
-        file: ./infra/secrets/produtos_db_name
-    clientes_db_user:
-        file: ./infra/secrets/clientes_db_user
-    clientes_db_password:
-        file: ./infra/secrets/clientes_db_password
-    clientes_db_name:
-        file: ./infra/secrets/clientes_db_name
+    products_db_user:
+        file: ./infra/secrets/products_db_user
+    products_db_password:
+        file: ./infra/secrets/products_db_password
+    products_db_name:
+        file: ./infra/secrets/products_db_name
+    clients_db_user:
+        file: ./infra/secrets/clients_db_user
+    clients_db_password:
+        file: ./infra/secrets/clients_db_password
+    clients_db_name:
+        file: ./infra/secrets/clients_db_name
     orders_db_user:
         file: ./infra/secrets/orders_db_user
     orders_db_password:

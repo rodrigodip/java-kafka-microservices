@@ -4,9 +4,9 @@ spring:
     application:
         name: products
     datasource:
-        url: "jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5555}/${produtos_db_name:products}"
-        username: "${produtos_db_user:product_user}"
-        password: "${produtos_db_password:senha_produtos_123}"
+        url: "jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5555}/${products_db_name:products}"
+        username: "${products_db_user:product_user}"
+        password: "${products_db_password:senha_products_123}"
         driver-class-name: org.postgresql.Driver
     jpa:
         hibernate:

@@ -1,12 +1,9 @@
 package br.com.rodrigodip.products.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import br.com.rodrigodip.products.dto.ProductRequest;
-import br.com.rodrigodip.products.dto.ProductResponse;
 import br.com.rodrigodip.products.entity.Product;
 import br.com.rodrigodip.products.exceptions.ProductNotFoundException;
 import br.com.rodrigodip.products.repository.ProductRepository;
@@ -18,42 +15,20 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public ProductResponse save(ProductRequest request) {
+    public Product save(Product product) {
 
-        Product product = new Product(
-                request.name(),
-                request.price());
-
-        Product savedProduct = productRepository.save(product);
-
-        return new ProductResponse(
-                savedProduct.getId(),
-                savedProduct.getName(),
-                savedProduct.getPrice());
+        return productRepository.save(product);
     }
 
-    public ProductResponse findById(Long id) {
+    public Product findById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
 
-        return new ProductResponse(
-                product.getId(),
-                product.getName(),
-                product.getPrice());
+        return product;
     }
 
-    public List<ProductResponse> findAll() {
+    public List<Product> findAll() {
         List<Product> productList = productRepository.findAll();
-        List<ProductResponse> responseList = new ArrayList<>();
-
-        for (Product product : productList) {
-            ProductResponse response = new ProductResponse(
-                    product.getId(),
-                    product.getName(),
-                    product.getPrice());
-
-            responseList.add(response);
-        }
-        return responseList;
+        return productList;
     }
 }

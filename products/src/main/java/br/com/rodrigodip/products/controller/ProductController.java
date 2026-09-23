@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.rodrigodip.products.dto.ProductRequest;
 import br.com.rodrigodip.products.dto.ProductResponse;
+import br.com.rodrigodip.products.dto.mapper.ProductMapper;
 import br.com.rodrigodip.products.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,25 +25,31 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class ProductController {
 
     private final ProductService productService;
+    private final ProductMapper mapper;
 
     @PostMapping
     public ResponseEntity<ProductResponse> saveProduct(@Valid @RequestBody ProductRequest request) {
 
-        ProductResponse response = productService.save(request);
+        var product = mapper.toRequest(request);
+        var savedProduct = productService.save(product);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(response);
+                .body(mapper.toResponse(savedProduct));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> findById(@PathVariable Long id) {
-        ProductResponse product = productService.findById(id);
-        return ResponseEntity.ok(product);
+
+        ProductResponse response = mapper.toResponse(productService.findById(id));
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
     public ResponseEntity<List<ProductResponse>> findAll() {
-        List<ProductResponse> productList = productService.findAll();
+
+        List<ProductResponse> productList = productService.findAll()
+                .stream().map(product -> mapper.toResponse(product)).toList();
+
         return ResponseEntity.ok(productList);
     }
 }

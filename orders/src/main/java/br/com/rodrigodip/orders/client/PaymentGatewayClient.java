@@ -1,9 +1,10 @@
-package br.com.rodrigodip.orders.entity;
+package br.com.rodrigodip.orders.client;
 
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
+import br.com.rodrigodip.orders.entity.Order;
 import lombok.extern.slf4j.Slf4j;
 
 @Component

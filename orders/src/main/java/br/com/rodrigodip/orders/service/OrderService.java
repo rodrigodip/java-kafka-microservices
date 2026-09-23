@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.com.rodrigodip.orders.client.PaymentGatewayClient;
 import br.com.rodrigodip.orders.entity.Order;
-import br.com.rodrigodip.orders.entity.PaymentGatewayClient;
 import br.com.rodrigodip.orders.exceptions.OrderNotFoundException;
 import br.com.rodrigodip.orders.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;

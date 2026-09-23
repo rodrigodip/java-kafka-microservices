@@ -1,12 +1,9 @@
 package br.com.rodrigodip.clients.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import br.com.rodrigodip.clients.dto.ClientRequest;
-import br.com.rodrigodip.clients.dto.ClientResponse;
 import br.com.rodrigodip.clients.entity.Client;
 import br.com.rodrigodip.clients.exceptions.ClientNotFoundException;
 import br.com.rodrigodip.clients.repository.ClientRepository;
@@ -18,62 +15,20 @@ public class ClientService {
 
     private final ClientRepository clientRepository;
 
-    public ClientResponse save(ClientRequest request) {
+    public Client save(Client client) {
 
-        Client client = new Client(
-                request.name(),
-                request.cpf(),
-                request.email(),
-                request.phone(),
-                request.address(),
-                request.number(),
-                request.zipcode());
-
-        Client savedClient = clientRepository.save(client);
-
-        return new ClientResponse(
-                savedClient.getId(),
-                savedClient.getName(),
-                savedClient.getCpf(),
-                savedClient.getEmail(),
-                savedClient.getPhone(),
-                savedClient.getAddress(),
-                savedClient.getNumber(),
-                savedClient.getZipcode());
+        return clientRepository.save(client);
     }
 
-    public ClientResponse findById(Long id) {
+    public Client findById(Long id) {
+
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ClientNotFoundException(id));
-
-        return new ClientResponse(
-                client.getId(),
-                client.getName(),
-                client.getCpf(),
-                client.getEmail(),
-                client.getPhone(),
-                client.getAddress(),
-                client.getNumber(),
-                client.getZipcode());
+        return client;
     }
 
-    public List<ClientResponse> findAll() {
-        List<Client> clientList = clientRepository.findAll();
-        List<ClientResponse> responseList = new ArrayList<>();
+    public List<Client> findAll() {
 
-        for (Client client : clientList) {
-            ClientResponse response = new ClientResponse(
-                    client.getId(),
-                    client.getName(),
-                    client.getCpf(),
-                    client.getEmail(),
-                    client.getPhone(),
-                    client.getAddress(),
-                    client.getNumber(),
-                    client.getZipcode());
-
-            responseList.add(response);
-        }
-        return responseList;
+        return clientRepository.findAll();
     }
 }

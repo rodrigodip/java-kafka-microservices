@@ -8,10 +8,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "clients")
 @Getter
+@Setter
 @NoArgsConstructor
 public class Client {
     @Id
@@ -39,20 +41,4 @@ public class Client {
     @Column(name = "zipcode", length = 8)
     private String zipcode;
 
-    public Client(
-            String name,
-            String cpf,
-            String email,
-            String phone,
-            String address,
-            String number,
-            String zipcoode) {
-        this.name = name;
-        this.cpf = cpf;
-        this.email = email;
-        this.phone = phone;
-        this.address = address;
-        this.number = number;
-        this.zipcode = zipcoode;
-    }
 }

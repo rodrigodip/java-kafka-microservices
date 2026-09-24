@@ -18,5 +18,12 @@ spring:
     flyway:
         enabled: true
         baseline-on-migrate: true
+app:
+    http-clients:
+        base-urls:
+            products: ${PRODUCTS_BASE_URL:http://localhost:8081}
+            clients: ${CLIENTS_BASE_URL:http://localhost:8082}
+        connect-timeout: 3s
+        read-timeout: 5s
 server:
     port: 8083

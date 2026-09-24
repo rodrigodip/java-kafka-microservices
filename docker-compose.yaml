@@ -79,6 +79,8 @@ services:
         environment:
             DB_HOST: postgres-db
             DB_PORT: "5432"
+            PRODUCTS_BASE_URL: ${PRODUCTS_BASE_URL:-http://product-service:8081}
+            CLIENTS_BASE_URL: ${CLIENTS_BASE_URL:-http://client-service:8082}
         secrets:
             - orders_db_user
             - orders_db_password

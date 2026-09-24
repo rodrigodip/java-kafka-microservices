@@ -1,0 +1,28 @@
+{
+    "properties": [
+        {
+            "name": "app.http-clients.base-urls.products",
+            "type": "java.lang.String",
+            "description": "Base URL of the Products microservice, used by ProductServiceClient for HTTP Interface consumption. Overridden at runtime by the PRODUCTS_BASE_URL environment variable.",
+            "defaultValue": "http://localhost:8081"
+        },
+        {
+            "name": "app.http-clients.base-urls.clients",
+            "type": "java.lang.String",
+            "description": "Base URL of the Clients microservice, used by ClientServiceClient for HTTP Interface consumption. Overridden at runtime by the CLIENTS_BASE_URL environment variable.",
+            "defaultValue": "http://localhost:8082"
+        },
+        {
+            "name": "app.http-clients.connect-timeout",
+            "type": "java.time.Duration",
+            "description": "Timeout for establishing a connection to downstream services (products, clients).",
+            "defaultValue": "3s"
+        },
+        {
+            "name": "app.http-clients.read-timeout",
+            "type": "java.time.Duration",
+            "description": "Timeout for waiting for a response from downstream services (products, clients).",
+            "defaultValue": "5s"
+        }
+    ]
+}

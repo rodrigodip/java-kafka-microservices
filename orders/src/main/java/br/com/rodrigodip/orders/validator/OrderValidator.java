@@ -17,6 +17,7 @@ import br.com.rodrigodip.orders.entity.Order;
 import br.com.rodrigodip.orders.entity.OrderItem;
 import br.com.rodrigodip.orders.exceptions.ClientNotFoundOnClientException;
 import br.com.rodrigodip.orders.exceptions.DownstreamUnavailableException;
+import br.com.rodrigodip.orders.exceptions.PriceMismatchException;
 import br.com.rodrigodip.orders.exceptions.ProductNotFoundOnClientException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +59,10 @@ public class OrderValidator {
                 throw new ProductNotFoundOnClientException(item.getProductId());
             }
             log.info("Product id:{} name:{} found in Product-Service.", product.id(), product.name());
+            if (item.getUnitPrice() == null || product.price().compareTo(item.getUnitPrice()) != 0) {
+                throw new PriceMismatchException(item.getProductId(), product.price(), item.getUnitPrice());
+            }
+            log.info("Product id:{} price [{}] matches.", product.id(), product.price());
             // if (produto.estoque() < item.quantidade()) {
             // throw new EstoqueInsuficienteException(produto.id(), produto.estoque(),
             // item.quantidade());

@@ -53,4 +53,36 @@ public class GlobalExceptionHandler {
 				.status(HttpStatus.NOT_FOUND)
 				.body(response);
 	}
+
+	@ExceptionHandler({ ProductNotFoundOnClientException.class, ClientNotFoundOnClientException.class })
+	public ResponseEntity<ErrorResponse> handleUnprocessableReference(
+			RuntimeException ex, HttpServletRequest request) {
+
+		ErrorResponse response = new ErrorResponse(
+				Instant.now(),
+				HttpStatus.UNPROCESSABLE_CONTENT.value(),
+				HttpStatus.UNPROCESSABLE_CONTENT.getReasonPhrase(),
+				ex.getMessage(),
+				request.getRequestURI());
+
+		return ResponseEntity
+				.status(HttpStatus.UNPROCESSABLE_CONTENT)
+				.body(response);
+	}
+
+	@ExceptionHandler(DownstreamUnavailableException.class)
+	public ResponseEntity<ErrorResponse> handleDownstreamUnavailable(
+			DownstreamUnavailableException ex, HttpServletRequest request) {
+
+		ErrorResponse response = new ErrorResponse(
+				Instant.now(),
+				HttpStatus.SERVICE_UNAVAILABLE.value(),
+				HttpStatus.SERVICE_UNAVAILABLE.getReasonPhrase(),
+				ex.getMessage(),
+				request.getRequestURI());
+
+		return ResponseEntity
+				.status(HttpStatus.SERVICE_UNAVAILABLE)
+				.body(response);
+	}
 }

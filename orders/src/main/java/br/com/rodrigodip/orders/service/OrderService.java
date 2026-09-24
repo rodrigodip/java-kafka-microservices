@@ -9,6 +9,7 @@ import br.com.rodrigodip.orders.client.PaymentGatewayClient;
 import br.com.rodrigodip.orders.entity.Order;
 import br.com.rodrigodip.orders.exceptions.OrderNotFoundException;
 import br.com.rodrigodip.orders.repository.OrderRepository;
+import br.com.rodrigodip.orders.validator.OrderValidator;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -17,9 +18,11 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final PaymentGatewayClient pspClient;
+    private final OrderValidator orderValidator;
 
     @Transactional
     public Order saveOrder(Order order) {
+        orderValidator.validate(order);
 
         order.place();
         var paymentKey = pspClient.processPayment(order);

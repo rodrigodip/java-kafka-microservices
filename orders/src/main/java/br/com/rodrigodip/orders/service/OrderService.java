@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.com.rodrigodip.orders.client.PaymentGatewayClient;
 import br.com.rodrigodip.orders.entity.Order;
+import br.com.rodrigodip.orders.entity.PaymentData;
+import br.com.rodrigodip.orders.enums.OrderStatus;
 import br.com.rodrigodip.orders.exceptions.OrderNotFoundException;
 import br.com.rodrigodip.orders.repository.OrderRepository;
 import br.com.rodrigodip.orders.validator.OrderValidator;
@@ -42,5 +44,24 @@ public class OrderService {
                 .orElseThrow(() -> new OrderNotFoundException(id));
 
         return order;
+    }
+
+    public Order PaymentRetry(Long id, PaymentData paymentData) {
+
+        var foundOrder = orderRepository.findById(id);
+
+        if (foundOrder.isEmpty()) {
+            return null;
+        }
+
+        Order order = foundOrder.get();
+
+        order.setPaymentData(paymentData);
+        order.setStatus(OrderStatus.PLACED);
+
+        var paymentKey = pspClient.processPayment(order);
+        order.setPaymentKey(paymentKey);
+
+        return orderRepository.save(order);
     }
 }

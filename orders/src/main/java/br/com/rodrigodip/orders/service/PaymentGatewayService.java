@@ -1,4 +1,4 @@
-package br.com.rodrigodip.orders.validator;
+package br.com.rodrigodip.orders.service;
 
 import org.springframework.stereotype.Service;
 
@@ -20,6 +20,7 @@ public class PaymentGatewayService {
 
         if (success) {
             foundOrder.setStatus(OrderStatus.PAID);
+            foundOrder.setNotes(notes);
         } else {
             foundOrder.setStatus(OrderStatus.PAYMENT_FAILED);
         }

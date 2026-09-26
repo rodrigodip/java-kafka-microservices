@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.rodrigodip.orders.dto.OrderRequest;
 import br.com.rodrigodip.orders.dto.OrderResponse;
+import br.com.rodrigodip.orders.dto.PaymentRequest;
 import br.com.rodrigodip.orders.dto.mappers.OrderMapper;
+import br.com.rodrigodip.orders.dto.mappers.PaymentDataMapper;
+import br.com.rodrigodip.orders.entity.PaymentData;
 import br.com.rodrigodip.orders.service.OrderService;
 import lombok.RequiredArgsConstructor;
 
@@ -24,22 +27,23 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class OrderController {
 
     private final OrderService orderService;
-    private final OrderMapper mapper;
+    private final OrderMapper orderMapper;
+    private final PaymentDataMapper paymentDataMapper;
 
     @PostMapping
     public ResponseEntity<OrderResponse> saveOrder(@RequestBody OrderRequest request) {
 
-        var order = mapper.map(request);
+        var order = orderMapper.map(request);
         var savedOrder = orderService.saveOrder(order);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(mapper.toResponse(savedOrder));
+                .body(orderMapper.toResponse(savedOrder));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> findById(@PathVariable Long id) {
-        OrderResponse response = mapper.toResponse(orderService.findById(id));
+        OrderResponse response = orderMapper.toResponse(orderService.findById(id));
         return ResponseEntity.ok(response);
     }
 
@@ -47,8 +51,18 @@ public class OrderController {
     public ResponseEntity<List<OrderResponse>> findAll() {
 
         List<OrderResponse> ordersList = orderService.findAll()
-                .stream().map(order -> mapper.toResponse(order)).toList();
+                .stream().map(order -> orderMapper.toResponse(order)).toList();
 
         return ResponseEntity.ok(ordersList);
+    }
+
+    @PostMapping("/{id}/payments/")
+    public ResponseEntity<Void> PaymentRetry(@PathVariable Long id, @RequestBody PaymentRequest request) {
+
+        PaymentData paymentRequest = paymentDataMapper.map(request);
+
+        orderService.PaymentRetry(id, paymentRequest);
+
+        return ResponseEntity.noContent().build();
     }
 }

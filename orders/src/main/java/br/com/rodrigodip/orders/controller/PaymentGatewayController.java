@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.rodrigodip.orders.client.dto.PaymentGateway;
-import br.com.rodrigodip.orders.validator.PaymentGatewayService;
+import br.com.rodrigodip.orders.service.PaymentGatewayService;
 import lombok.RequiredArgsConstructor;
 
 @RestController

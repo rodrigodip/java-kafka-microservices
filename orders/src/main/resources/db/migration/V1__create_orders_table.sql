@@ -5,6 +5,7 @@
 -- SHIPPED -> Order shipped
 -- PAYMENT_FAILED -> Payment failed
 -- PREPARING_SHIPMENT -> Order being prepared for shipping
+-- CANCELLED -> Order cancelled after exhausting payment retries
 -- ================================================================ --
 
 CREATE TABLE orders(
@@ -13,6 +14,7 @@ CREATE TABLE orders(
     order_date TIMESTAMP NOT NULL DEFAULT now(),
     payment_key TEXT,
     payment_mode VARCHAR(20),
+    payment_attempts INT NOT NULL DEFAULT 0,
     status varchar(20) NOT NULL DEFAULT 'PLACED' CHECK ( 
       status in (
         'PLACED',
@@ -20,7 +22,8 @@ CREATE TABLE orders(
         'INVOICED',
         'SHIPPED',
         'PAYMENT_FAILED',
-        'PREPARING_SHIPMENT'
+        'PREPARING_SHIPMENT',
+        'CANCELLED'
       )
     ),
     notes TEXT,

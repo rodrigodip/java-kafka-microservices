@@ -8,7 +8,7 @@ import org.springframework.web.client.support.RestClientHttpServiceGroupConfigur
 import org.springframework.web.service.registry.ImportHttpServices;
 
 @Configuration
-@EnableConfigurationProperties(HttpClientsProperties.class)
+@EnableConfigurationProperties({ HttpClientsProperties.class, PaymentProperties.class })
 @ImportHttpServices(group = "products", types = { ProductServiceClient.class })
 @ImportHttpServices(group = "clients", types = { ClientServiceClient.class })
 public class HttpClientConfiguration {

@@ -23,6 +23,12 @@
             "type": "java.time.Duration",
             "description": "Timeout for waiting for a response from downstream services (products, clients).",
             "defaultValue": "5s"
+        },
+        {
+            "name": "app.payment.max-attempts",
+            "type": "java.lang.Integer",
+            "description": "Maximum number of payment attempts per order, including the initial charge and manual retries. Orders exceeding the limit are cancelled.",
+            "defaultValue": 3
         }
     ]
 }

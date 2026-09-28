@@ -55,7 +55,8 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler({ ProductNotFoundOnClientException.class, ClientNotFoundOnClientException.class,
-			PriceMismatchException.class })
+			PriceMismatchException.class, InvalidOrderStatusException.class,
+			PaymentRetriesExhaustedException.class })
 	public ResponseEntity<ErrorResponse> handleUnprocessableReference(
 			RuntimeException ex, HttpServletRequest request) {
 

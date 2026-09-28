@@ -43,6 +43,9 @@ public class Order {
     @Column(name = "payment_key")
     private String paymentKey;
 
+    @Column(name = "payment_attempts", nullable = false)
+    private Integer paymentAttempts = 0;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private OrderStatus status;

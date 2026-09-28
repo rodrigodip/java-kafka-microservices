@@ -13,6 +13,7 @@ public record OrderResponse(
                 BigDecimal total,
                 LocalDateTime orderDate,
                 String paymentKey,
+                Integer paymentAttempts,
                 PaymentResponse paymentData,
                 List<OrderItemResponse> itensList) {
 }

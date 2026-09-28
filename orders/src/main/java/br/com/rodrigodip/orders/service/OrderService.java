@@ -6,10 +6,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.com.rodrigodip.orders.client.PaymentGatewayClient;
+import br.com.rodrigodip.orders.client.PaymentProperties;
 import br.com.rodrigodip.orders.entity.Order;
 import br.com.rodrigodip.orders.entity.PaymentData;
 import br.com.rodrigodip.orders.enums.OrderStatus;
+import br.com.rodrigodip.orders.exceptions.InvalidOrderStatusException;
 import br.com.rodrigodip.orders.exceptions.OrderNotFoundException;
+import br.com.rodrigodip.orders.exceptions.PaymentRetriesExhaustedException;
 import br.com.rodrigodip.orders.repository.OrderRepository;
 import br.com.rodrigodip.orders.validator.OrderValidator;
 import lombok.RequiredArgsConstructor;
@@ -21,12 +24,14 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final PaymentGatewayClient pspClient;
     private final OrderValidator orderValidator;
+    private final PaymentProperties paymentProperties;
 
     @Transactional
     public Order saveOrder(Order order) {
         orderValidator.validate(order);
 
         order.place();
+        order.setPaymentAttempts(1);
         var paymentKey = pspClient.processPayment(order);
         order.setPaymentKey(paymentKey);
 
@@ -46,18 +51,26 @@ public class OrderService {
         return order;
     }
 
+    @Transactional(noRollbackFor = PaymentRetriesExhaustedException.class)
     public Order PaymentRetry(Long id, PaymentData paymentData) {
 
-        var foundOrder = orderRepository.findById(id);
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException(id));
 
-        if (foundOrder.isEmpty()) {
-            return null;
+        if (order.getStatus() != OrderStatus.PAYMENT_FAILED) {
+            throw new InvalidOrderStatusException(id, order.getStatus(), OrderStatus.PAYMENT_FAILED);
         }
 
-        Order order = foundOrder.get();
+        if (order.getPaymentAttempts() >= paymentProperties.getMaxAttempts()) {
+            order.setStatus(OrderStatus.CANCELLED);
+            orderRepository.save(order);
+            throw new PaymentRetriesExhaustedException(id, paymentProperties.getMaxAttempts());
+        }
 
         order.setPaymentData(paymentData);
         order.setStatus(OrderStatus.PLACED);
+        order.setNotes(null);
+        order.setPaymentAttempts(order.getPaymentAttempts() + 1);
 
         var paymentKey = pspClient.processPayment(order);
         order.setPaymentKey(paymentKey);

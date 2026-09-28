@@ -27,6 +27,6 @@ app:
         read-timeout: 5s
     payment:
         max-attempts: 3
-        callback-api-key: ${PSP_CALLBACK_API_KEY:dev-callback-secret}
+        callback-api-key: ${psp_callback_api_key:${PSP_CALLBACK_API_KEY:dev-callback-secret}}
 server:
     port: 8083

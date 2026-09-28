@@ -96,6 +96,18 @@ main() {
     ORDERS_DB_PASSWORD=$(generate_password)
     ORDERS_DB_NAME=$(prompt_with_default "ORDERS_DB_NAME" "orders_db_name" "$ORDERS_DB_NAME")
 
+    # --- Orders PSP Callback ---
+    # Shared secret: unlike DB passwords, this value is also held by the PSP,
+    # so it must be preserved across rotations (generated only on first run).
+    echo -e "\n${BLUE}Orders PSP Callback${NC}" >&2
+    if [ -f "$SECRETS_DIR/psp_callback_api_key" ]; then
+        PSP_CALLBACK_API_KEY=$(cat "$SECRETS_DIR/psp_callback_api_key")
+        echo -e "  ${GREEN}Keeping existing 'psp_callback_api_key' (value hidden)${NC}" >&2
+    else
+        PSP_CALLBACK_API_KEY=$(generate_password)
+        echo -e "  ${GREEN}Generated new 'psp_callback_api_key' (value hidden)${NC}" >&2
+    fi
+
     # --- Summary ---
     echo -e "\n${BLUE}========================================${NC}" >&2
     echo -e "${BLUE}  Secret Summary${NC}" >&2
@@ -108,6 +120,7 @@ main() {
     echo -e "  CLIENTS_DB_NAME:  ${GREEN}${CLIENTS_DB_NAME}${NC}" >&2
     echo -e "  ORDERS_DB_USER:  ${GREEN}${ORDERS_DB_USER}${NC}" >&2
     echo -e "  ORDERS_DB_NAME:  ${GREEN}${ORDERS_DB_NAME}${NC}" >&2
+    echo -e "  PSP_CALLBACK_API_KEY: ${GREEN}(preserved or generated, value hidden)${NC}" >&2
     echo -e "  ${YELLOW}(Passwords will be generated randomly)${NC}" >&2
     echo -e "${BLUE}========================================${NC}" >&2
 
@@ -137,6 +150,8 @@ main() {
     create_file_secret "orders_db_user"     "$ORDERS_DB_USER"
     create_file_secret "orders_db_password" "$ORDERS_DB_PASSWORD"
     create_file_secret "orders_db_name"     "$ORDERS_DB_NAME"
+
+    create_file_secret "psp_callback_api_key" "$PSP_CALLBACK_API_KEY"
 
     echo -e "\n${GREEN}All secrets created in ${SECRETS_DIR}/${NC}" >&2
     echo -e "${BLUE}Run 'make up' to start the stack.${NC}\n" >&2

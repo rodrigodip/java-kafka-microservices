@@ -2,6 +2,7 @@ package br.com.rodrigodip.orders.service;
 
 import org.springframework.stereotype.Service;
 
+import br.com.rodrigodip.orders.client.dto.PaymentGateway;
 import br.com.rodrigodip.orders.enums.OrderStatus;
 import br.com.rodrigodip.orders.exceptions.OrderNotFoundException;
 import br.com.rodrigodip.orders.repository.OrderRepository;
@@ -13,17 +14,19 @@ public class PaymentGatewayService {
 
     private final OrderRepository orderRepository;
 
-    public Void updatePaymentStatus(long id, String paymentKey, boolean success, String notes) {
+    public Void updatePaymentStatus(PaymentGateway paymentGateway) {
 
-        var foundOrder = orderRepository.findByIdAndPaymentKey(id, paymentKey)
-                .orElseThrow(() -> new OrderNotFoundException(id));
+        var foundOrder = orderRepository.findByIdAndPaymentKey(
+                paymentGateway.id(),
+                paymentGateway.paymentKey())
+                .orElseThrow(() -> new OrderNotFoundException(paymentGateway.id()));
 
-        if (success) {
+        if (paymentGateway.status()) {
             foundOrder.setStatus(OrderStatus.PAID);
-            foundOrder.setNotes(notes);
         } else {
             foundOrder.setStatus(OrderStatus.PAYMENT_FAILED);
         }
+        foundOrder.setNotes(paymentGateway.notes());
 
         orderRepository.save(foundOrder);
         return null;

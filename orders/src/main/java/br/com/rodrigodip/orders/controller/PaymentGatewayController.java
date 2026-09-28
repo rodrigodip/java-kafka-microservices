@@ -12,18 +12,18 @@ import br.com.rodrigodip.orders.service.PaymentGatewayService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/orders/payment-callback")
+@RequestMapping("/orders")
 @RequiredArgsConstructor
 public class PaymentGatewayController {
 
     private final PaymentGatewayService paymentService;
 
-    @PostMapping
+    @PostMapping("/payment-callback")
     public ResponseEntity<Object> processPayment(
             @RequestBody PaymentGateway body,
             @RequestHeader(required = true, name = "apiKey") String apikey) {
 
-        paymentService.updatePaymentStatus(body.id(), body.paymentKey(), body.status(), body.notes());
+        paymentService.updatePaymentStatus(body);
 
         return ResponseEntity.ok().build();
     }

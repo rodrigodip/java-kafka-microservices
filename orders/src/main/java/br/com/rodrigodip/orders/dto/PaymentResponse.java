@@ -3,6 +3,5 @@ package br.com.rodrigodip.orders.dto;
 import br.com.rodrigodip.orders.enums.PaymentMode;
 
 public record PaymentResponse(
-        String data,
         PaymentMode paymentMode) {
 }

@@ -12,6 +12,7 @@ public record OrderResponse(
                 OrderStatus status,
                 BigDecimal total,
                 LocalDateTime orderDate,
+                String paymentKey,
                 PaymentResponse paymentData,
                 List<OrderItemResponse> itensList) {
 }

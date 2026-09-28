@@ -12,6 +12,7 @@ CREATE TABLE orders(
     client_id BIGINT NOT NULL,
     order_date TIMESTAMP NOT NULL DEFAULT now(),
     payment_key TEXT,
+    payment_mode VARCHAR(20),
     status varchar(20) NOT NULL DEFAULT 'PLACED' CHECK ( 
       status in (
         'PLACED',

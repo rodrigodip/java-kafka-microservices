@@ -196,6 +196,29 @@ make up              # Reinicie com os novos secrets
 - Spring Boot lê os secrets de `/run/secrets/` via `configtree`
 - Secrets nunca aparecem em `docker inspect` ou variáveis de ambiente
 
+### Segredo do Callback PSP (Orders)
+
+O endpoint `POST /orders/payment-callback` exige o header `apiKey` com o segredo compartilhado do PSP (`app.payment.callback-api-key`). Sem ele, qualquer um com o `paymentKey` de um pedido poderia forjar callbacks.
+
+- O segredo vive em `infra/secrets/psp_callback_api_key`, criado pelo `make create-secrets`
+- Diferente das senhas de banco, ele é **gerado uma única vez e preservado nas rotações** — o PSP guarda uma cópia, então regenerar quebraria o callback
+- Precedência: arquivo de secret → `PSP_CALLBACK_API_KEY` → `dev-callback-secret` (somente dev local)
+- Testes locais: use o valor do arquivo no header `apiKey` das requisições de callback (Bruno)
+- Chave inválida → `401`, antes de qualquer lookup (sem revelar se o pedido existe)
+
+### Limitações Conhecidas
+
+Fraquezas mapeadas durante o desenvolvimento, registradas para não se perderem:
+
+| # | Limitação | Impacto | Mitigação prevista |
+|---|---|---|---|
+| 1 | **Nenhuma autenticação na API** — endpoints públicos; callback protegido apenas por segredo estático | Acesso indevido; sem identidade de chamador | AuthN/AuthZ (futuro); HMAC no callback em produção |
+| 2 | Retries concorrentes podem furar o teto | Cobrança além do limite | `@Version` no `Order` (optimistic locking) |
+| 3 | Callback tardio com `paymentKey` antiga → 404 | Falha legítima descartada | Idempotency-key por tentativa |
+| 4 | `PLACED` sem callback fica para sempre | Pedidos zumbis, sem retry | TTL + `EXPIRED` (fase Kafka) |
+| 5 | Retry só parte de `PAYMENT_FAILED` | `PLACED` sem resposta do PSP não retrya | Reavaliar junto ao TTL |
+| 6 | `notes` é interno, sem garantia futura | Política interna pode vazar se o campo for exposto | Revisar conteúdo antes de expor |
+
 ## 🚀 O que espero aprender
 
 Ao concluir este projeto, espero adquirir experiência prática no desenvolvimento e na arquitetura de sistemas backend distribuídos utilizando tecnologias modernas do ecossistema Java.O foco não será apenas aprender cada ferramenta individualmente, mas compreender **como essas tecnologias se integram para formar uma arquitetura completa baseada em microservices**.
@@ -393,6 +416,29 @@ make up              # Restart with new secrets
 - Secret files have `chmod 600` (owner read-only)
 - Spring Boot reads secrets from `/run/secrets/` via `configtree`
 - Secrets never appear in `docker inspect` or environment variables
+
+### PSP Callback Secret (Orders)
+
+The `POST /orders/payment-callback` endpoint requires the `apiKey` header with the PSP shared secret (`app.payment.callback-api-key`). Without it, anyone holding an order's `paymentKey` could forge callbacks.
+
+- The secret lives in `infra/secrets/psp_callback_api_key`, created by `make create-secrets`
+- Unlike DB passwords, it is **generated once and preserved across rotations** — the PSP holds a copy, so regenerating would break the callback
+- Precedence: secret file → `PSP_CALLBACK_API_KEY` → `dev-callback-secret` (local dev only)
+- Local testing: use the file value in the `apiKey` header of callback requests (Bruno)
+- Invalid key → `401`, before any lookup (without revealing whether the order exists)
+
+### Known Limitations
+
+Weaknesses mapped during development, recorded so they are not lost:
+
+| # | Limitation | Impact | Planned mitigation |
+|---|---|---|---|
+| 1 | **No API authentication whatsoever** — public endpoints; callback protected only by a static secret | Unauthorized access; no caller identity | AuthN/AuthZ (future); HMAC on callback in production |
+| 2 | Concurrent retries can overshoot the cap | Charges beyond the limit | `@Version` on `Order` (optimistic locking) |
+| 3 | Late callback with stale `paymentKey` → 404 | Legitimate failure discarded | Per-attempt idempotency key |
+| 4 | `PLACED` without callback stays forever | Zombie orders, no retry | TTL + `EXPIRED` (Kafka phase) |
+| 5 | Retry only from `PAYMENT_FAILED` | `PLACED` with no PSP response cannot retry | Reassess alongside TTL |
+| 6 | `notes` is internal, with no future guarantee | Internal policy could leak if the field is exposed | Review content before exposing |
 
 ## 🚀 What I Expect to Learn
 

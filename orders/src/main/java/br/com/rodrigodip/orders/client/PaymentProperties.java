@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class PaymentProperties {
 
     private int maxAttempts = 3;
+    private String callbackApiKey;
 
     public int getMaxAttempts() {
         return maxAttempts;
@@ -13,5 +14,13 @@ public class PaymentProperties {
 
     public void setMaxAttempts(int maxAttempts) {
         this.maxAttempts = maxAttempts;
+    }
+
+    public String getCallbackApiKey() {
+        return callbackApiKey;
+    }
+
+    public void setCallbackApiKey(String callbackApiKey) {
+        this.callbackApiKey = callbackApiKey;
     }
 }

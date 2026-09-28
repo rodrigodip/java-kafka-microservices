@@ -29,6 +29,11 @@
             "type": "java.lang.Integer",
             "description": "Maximum number of payment attempts per order, including the initial charge and manual retries. Orders exceeding the limit are cancelled.",
             "defaultValue": 3
+        },
+        {
+            "name": "app.payment.callback-api-key",
+            "type": "java.lang.String",
+            "description": "Shared secret used to authenticate PSP payment callbacks via the apiKey header. Overridden at runtime by the PSP_CALLBACK_API_KEY environment variable."
         }
     ]
 }

@@ -87,4 +87,20 @@ public class GlobalExceptionHandler {
 				.status(HttpStatus.SERVICE_UNAVAILABLE)
 				.body(response);
 	}
+
+	@ExceptionHandler(PaymentCallbackUnauthorizedException.class)
+	public ResponseEntity<ErrorResponse> handlePaymentCallbackUnauthorized(
+			PaymentCallbackUnauthorizedException ex, HttpServletRequest request) {
+
+		ErrorResponse response = new ErrorResponse(
+				Instant.now(),
+				HttpStatus.UNAUTHORIZED.value(),
+				HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+				ex.getMessage(),
+				request.getRequestURI());
+
+		return ResponseEntity
+				.status(HttpStatus.UNAUTHORIZED)
+				.body(response);
+	}
 }

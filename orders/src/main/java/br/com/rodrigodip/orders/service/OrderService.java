@@ -25,6 +25,7 @@ public class OrderService {
     private final PaymentGatewayClient pspClient;
     private final OrderValidator orderValidator;
     private final PaymentProperties paymentProperties;
+    private final OrderEventPublisher orderEventPublisher;
 
     @Transactional
     public Order saveOrder(Order order) {
@@ -35,7 +36,10 @@ public class OrderService {
         var paymentKey = pspClient.processPayment(order);
         order.setPaymentKey(paymentKey);
 
-        return orderRepository.save(order);
+        var savedOrder = orderRepository.save(order);
+        orderEventPublisher.publishPlaced(savedOrder);
+
+        return savedOrder;
     }
 
     public List<Order> findAll() {
@@ -75,6 +79,9 @@ public class OrderService {
         var paymentKey = pspClient.processPayment(order);
         order.setPaymentKey(paymentKey);
 
-        return orderRepository.save(order);
+        var savedOrder = orderRepository.save(order);
+        orderEventPublisher.publishPlaced(savedOrder);
+
+        return savedOrder;
     }
 }

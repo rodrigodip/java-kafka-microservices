@@ -18,6 +18,7 @@ public class PaymentGatewayService {
 
     private final OrderRepository orderRepository;
     private final PaymentProperties paymentProperties;
+    private final OrderEventPublisher orderEventPublisher;
 
     private static final Set<OrderStatus> TERMINAL_STATUSES = EnumSet.of(
             OrderStatus.PAID,
@@ -47,6 +48,11 @@ public class PaymentGatewayService {
         foundOrder.setNotes(paymentGateway.notes());
 
         orderRepository.save(foundOrder);
+
+        if (foundOrder.getStatus() == OrderStatus.PAID) {
+            orderEventPublisher.publishPaid(foundOrder);
+        }
+
         return null;
     }
 }

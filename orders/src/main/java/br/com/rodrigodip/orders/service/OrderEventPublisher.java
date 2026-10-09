@@ -4,8 +4,9 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import br.com.rodrigodip.orders.client.KafkaClientProperties;
+import br.com.rodrigodip.orders.dto.OrderEvent;
+import br.com.rodrigodip.orders.dto.mappers.OrderEventMapper;
 import br.com.rodrigodip.orders.entity.Order;
-import br.com.rodrigodip.orders.event.OrderEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,6 +21,7 @@ public class OrderEventPublisher {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final KafkaClientProperties kafkaProperties;
+    private final OrderEventMapper orderEventMapper;
 
     public void publishPlaced(Order order) {
         publish(PLACED_ORDERS, order);
@@ -39,7 +41,7 @@ public class OrderEventPublisher {
             throw new IllegalStateException("Kafka topic not configured for key: " + topicKey);
         }
 
-        OrderEvent event = OrderEvent.from(order);
+        OrderEvent event = orderEventMapper.toEvent(order);
         kafkaTemplate.send(topic, String.valueOf(order.getId()), event)
                 .whenComplete((result, ex) -> {
                     if (ex != null) {

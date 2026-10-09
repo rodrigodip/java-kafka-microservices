@@ -36,7 +36,7 @@ services:
             retries: 5
             start_period: 15s
     kafka:
-        image: apache/kafka:latest
+        image: confluentinc/cp-kafka:7.9.10
         container_name: kafka-kraft
         ports:
             - "9092:9092"
@@ -54,7 +54,7 @@ services:
             KAFKA_INTER_BROKER_LISTENER_NAME: 'EXTERNAL'
         
             # Id do Cluster para inicialização automática do KRaft
-            KAFKA_CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+            CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
         
             # Configurações de Partições e Offset
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -62,7 +62,7 @@ services:
             KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
             KAFKA_LOG_DIRS: '/var/lib/kafka/data'
         volumes:
-            - kafka-data:/var/lib/kafka/data
+            - ./infra/kafka_log:/var/lib/kafka/data
 
     kafka-ui:
         image: kafbat/kafka-ui:latest
@@ -119,6 +119,7 @@ services:
         environment:
             DB_HOST: postgres-db
             DB_PORT: "5432"
+            KAFKA_BOOTSTRAP_SERVERS: kafka:19092
             PRODUCTS_BASE_URL: ${PRODUCTS_BASE_URL:-http://product-service:8081}
             CLIENTS_BASE_URL: ${CLIENTS_BASE_URL:-http://client-service:8082}
         secrets:
@@ -129,6 +130,8 @@ services:
         depends_on:
             postgres-db:
                 condition: service_healthy
+            kafka:
+                condition: service_started
 
 secrets:
     db_super_user:

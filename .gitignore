@@ -6,6 +6,7 @@
 *.backup
 infra/data
 infra/data_dev
+infra/kafka_log
 infra/secrets
 .env
 

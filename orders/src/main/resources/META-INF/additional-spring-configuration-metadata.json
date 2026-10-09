@@ -34,6 +34,48 @@
             "name": "app.payment.callback-api-key",
             "type": "java.lang.String",
             "description": "Shared secret used to authenticate PSP payment callbacks via the apiKey header. Overridden at runtime by the PSP_CALLBACK_API_KEY environment variable."
+        },
+        {
+            "name": "app.kafka.server-url",
+            "type": "java.lang.String",
+            "description": "Kafka bootstrap servers in host:port format (comma-separated for a cluster). Overridden at runtime by the KAFKA_BOOTSTRAP_SERVERS environment variable.",
+            "defaultValue": "localhost:9092"
+        },
+        {
+            "name": "app.kafka.acks",
+            "type": "java.lang.String",
+            "description": "Number of acknowledgements the producer requires from brokers before considering a request complete.",
+            "defaultValue": "all"
+        },
+        {
+            "name": "app.kafka.retries",
+            "type": "java.lang.Integer",
+            "description": "Number of times the producer retries sending a record when it fails.",
+            "defaultValue": 3
+        },
+        {
+            "name": "app.kafka.max-block-ms",
+            "type": "java.time.Duration",
+            "description": "Maximum time the producer blocks while waiting for metadata or buffer space before failing.",
+            "defaultValue": "5s"
+        },
+        {
+            "name": "app.kafka.topics.paid-orders",
+            "type": "java.lang.String",
+            "description": "Kafka topic for paid orders",
+            "defaultValue": "order.paid"
+        },
+        {
+            "name": "app.kafka.topics.invoiced-orders",
+            "type": "java.lang.String",
+            "description": "Kafka topic for invoiced orders",
+            "defaultValue": "order.invoiced"
+        },
+        {
+            "name": "app.kafka.topics.placed-orders",
+            "type": "java.lang.String",
+            "description": "Kafka topic for placed orders",
+            "defaultValue": "order.placed"
         }
     ]
 }

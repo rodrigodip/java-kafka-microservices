@@ -28,5 +28,14 @@ app:
     payment:
         max-attempts: 3
         callback-api-key: ${psp_callback_api_key:${PSP_CALLBACK_API_KEY:dev-callback-secret}}
+    kafka:
+        server-url: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+        acks: all
+        retries: 3
+        max-block-ms: 5s
+        topics:
+            paid-orders: order.paid
+            invoiced-orders: order.invoiced
+            placed-orders: order.placed
 server:
     port: 8083

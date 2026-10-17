@@ -6,7 +6,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import br.com.rodrigodip.orders.client.PaymentProperties;
-import br.com.rodrigodip.orders.client.dto.PaymentGateway;
+import br.com.rodrigodip.orders.client.dto.PaymentGatewayResponse;
 import br.com.rodrigodip.orders.enums.OrderStatus;
 import br.com.rodrigodip.orders.exceptions.OrderNotFoundException;
 import br.com.rodrigodip.orders.repository.OrderRepository;
@@ -27,7 +27,7 @@ public class PaymentGatewayService {
             OrderStatus.SHIPPED,
             OrderStatus.CANCELLED);
 
-    public Void updatePaymentStatus(PaymentGateway paymentGateway) {
+    public Void updatePaymentStatus(PaymentGatewayResponse paymentGateway) {
 
         var foundOrder = orderRepository.findByIdAndPaymentKey(
                 paymentGateway.id(),

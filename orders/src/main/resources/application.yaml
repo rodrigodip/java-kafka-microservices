@@ -36,6 +36,6 @@ app:
         topics:
             paid-orders: order.paid
             invoiced-orders: order.invoiced
-            placed-orders: order.placed
+            shipped-orders: order.shipped
 server:
     port: 8083

@@ -72,10 +72,10 @@
             "defaultValue": "order.invoiced"
         },
         {
-            "name": "app.kafka.topics.placed-orders",
+            "name": "app.kafka.topics.shipped-orders",
             "type": "java.lang.String",
-            "description": "Kafka topic for placed orders",
-            "defaultValue": "order.placed"
+            "description": "Kafka topic for shipped orders",
+            "defaultValue": "order.shipped"
         }
     ]
 }

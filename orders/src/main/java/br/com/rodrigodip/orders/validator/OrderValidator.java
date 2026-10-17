@@ -6,19 +6,15 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
 
-import br.com.rodrigodip.orders.client.ClientServiceClient;
-import br.com.rodrigodip.orders.client.ProductServiceClient;
+import br.com.rodrigodip.orders.client.OrderDataProvider;
 import br.com.rodrigodip.orders.client.dto.ClientResponse;
 import br.com.rodrigodip.orders.client.dto.ProductResponse;
 import br.com.rodrigodip.orders.entity.Order;
 import br.com.rodrigodip.orders.entity.OrderItem;
 import br.com.rodrigodip.orders.exceptions.ClientNotFoundOnClientException;
-import br.com.rodrigodip.orders.exceptions.DownstreamUnavailableException;
-import br.com.rodrigodip.orders.exceptions.PriceMismatchException;
 import br.com.rodrigodip.orders.exceptions.ProductNotFoundOnClientException;
+import br.com.rodrigodip.orders.exceptions.PriceMismatchException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,15 +23,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OrderValidator {
 
-    private final ClientServiceClient clientServiceClient;
-    private final ProductServiceClient productServiceClient;
+    private final OrderDataProvider dataProvider;
 
     public void validate(Order order) {
-        ClientResponse client = fetchClient(order.getClientId());
+        ClientResponse client = dataProvider.findClient(order.getClientId());
         validateClient(order, client);
 
         List<ProductResponse> products = order.getItensList().stream()
-                .map(item -> fetchProduct(item.getProductId()))
+                .map(item -> dataProvider.findProduct(item.getProductId()))
                 .toList();
         validateProducts(order, products);
     }
@@ -63,30 +58,6 @@ public class OrderValidator {
                 throw new PriceMismatchException(item.getProductId(), product.price(), item.getUnitPrice());
             }
             log.info("Product id:{} price [{}] matches.", product.id(), product.price());
-            // if (produto.estoque() < item.quantidade()) {
-            // throw new EstoqueInsuficienteException(produto.id(), produto.estoque(),
-            // item.quantidade());
-            // }
-        }
-    }
-
-    private ClientResponse fetchClient(Long clientId) {
-        try {
-            return clientServiceClient.findById(clientId);
-        } catch (HttpClientErrorException.NotFound e) {
-            throw new ClientNotFoundOnClientException(clientId);
-        } catch (RestClientException e) {
-            throw new DownstreamUnavailableException("clients", e);
-        }
-    }
-
-    private ProductResponse fetchProduct(Long productId) {
-        try {
-            return productServiceClient.findById(productId);
-        } catch (HttpClientErrorException.NotFound e) {
-            throw new ProductNotFoundOnClientException(productId);
-        } catch (RestClientException e) {
-            throw new DownstreamUnavailableException("products", e);
         }
     }
 }

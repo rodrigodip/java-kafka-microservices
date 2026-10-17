@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.security.MessageDigest;
 
 import br.com.rodrigodip.orders.client.PaymentProperties;
-import br.com.rodrigodip.orders.client.dto.PaymentGateway;
+import br.com.rodrigodip.orders.client.dto.PaymentGatewayResponse;
 import br.com.rodrigodip.orders.exceptions.PaymentCallbackUnauthorizedException;
 import br.com.rodrigodip.orders.service.PaymentGatewayService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class PaymentGatewayController {
 
     @PostMapping("/payment-callback")
     public ResponseEntity<Object> processPayment(
-            @RequestBody PaymentGateway body,
+            @RequestBody PaymentGatewayResponse body,
             @RequestHeader(required = true, name = "apiKey") String apikey) {
 
         if (!isValidCallbackKey(apikey)) {

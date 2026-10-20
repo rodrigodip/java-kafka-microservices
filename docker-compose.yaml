@@ -35,6 +35,36 @@ services:
             timeout: 5s
             retries: 5
             start_period: 15s
+
+    rustfs_perms:
+        image: alpine
+        user: root
+        volumes:
+            - ./infra/bucket:/fix_path
+        command: sh -c "mkdir -p /fix_path/data /fix_path/logs && chown -R 10001:10001 /fix_path"
+
+    rustfs:
+        image: rustfs/rustfs:latest   # consider pinning a specific version
+        depends_on:
+            rustfs_perms:
+                condition: service_completed_successfully
+        ports:
+            - "9000:9000"   # S3 API
+            - "9001:9001"   # Console
+        volumes:
+            - ./infra/bucket/data:/data
+            - ./infra/bucket/logs:/var/log/rustfs
+        environment:
+            RUSTFS_VOLUMES: /data
+            RUSTFS_ADDRESS: ":9000"
+            RUSTFS_CONSOLE_ENABLE: "true"
+            RUSTFS_CONSOLE_ADDRESS: ":9001"
+            RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-change-me-access}
+            RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-change-me-secret-key}
+            RUSTFS_OBS_LOGGER_LEVEL: error
+            RUSTFS_OBS_LOG_DIRECTORY: /var/log/rustfs/
+        restart: unless-stopped
+
     kafka:
         image: confluentinc/cp-kafka:7.9.10
         container_name: kafka-kraft

@@ -46,7 +46,8 @@ down: ## Apenas para os containers de produção (PRESERVA OS DADOS)
 
 clean: ## Destrutivo: Remove containers, volumes, todas as imagens e os dados
 	$(COMPOSE) $(COMPOSE_PROD) down -v --rmi all
-	sudo rm -rf $(SECRETS_PATH)/data
+	sudo rm -rf $(SECRETS_PATH)/data $(SECRETS_PATH)/data_dev $(SECRETS_PATH)/kafka_log $(SECRETS_PATH)/bucket
+	sudo rm -rf .infra
 
 # --- AMBIENTE DE DESENVOLVIMENTO (DEV) ---
 dev-up: ## Sobe o banco de desenvolvimento local (Porta 5555)

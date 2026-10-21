@@ -1,7 +1,5 @@
 package br.com.rodrigodip.invoicing.bucket;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 
 import org.springframework.stereotype.Service;
@@ -23,25 +21,18 @@ public class BucketService {
     private final S3Presigner s3Presigner;
     private final S3ClientProperties properties;
 
-    public void upload(BucketMediaRepresentation file) {
-        try {
-            Path path = Paths.get(file.path());
+    public void upload(BucketMediaRepresentation file, byte[] content) {
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(properties.getBucketName())
+                .key(file.name())
+                .contentType(file.mediaType().toString())
+                .build();
 
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(properties.getBucketName())
-                    .key(file.name())
-                    .contentType(file.mediaType().toString())
-                    .build();
+        System.out.println("Uploading file to S3 Bucket...");
 
-            System.out.println("Uploading file to RustFS...");
+        s3Client.putObject(putObjectRequest, RequestBody.fromBytes(content));
 
-            s3Client.putObject(putObjectRequest, RequestBody.fromFile(path));
-
-            System.out.println("Successfully uploaded " + file.name() + " to bucket.");
-        } catch (S3Exception e) {
-            System.err.println("RustFS/S3 error occurred: " + e.awsErrorDetails().errorMessage());
-            e.printStackTrace();
-        }
+        System.out.println("Successfully uploaded " + file.name() + " to S3 bucket.");
     }
 
     public String generatePresignedUrl(String fileName) {
@@ -59,7 +50,7 @@ public class BucketService {
             return s3Presigner.presignGetObject(presignRequest).url().toString();
 
         } catch (S3Exception e) {
-            System.err.println("Erro ao gerar URL no RustFS: " + e.awsErrorDetails().errorMessage());
+            System.err.println("Error generating presigned Url: " + e.awsErrorDetails().errorMessage());
             throw e;
         }
     }

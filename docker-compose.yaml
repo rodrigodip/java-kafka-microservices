@@ -95,7 +95,8 @@ services:
             KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
             KAFKA_LOG_DIRS: '/var/lib/kafka/data'
         volumes:
-            - ./infra/kafka_log:/var/lib/kafka/data
+            - kafka_data:/var/lib/kafka/data
+            - ./infra/kafka/secrets:/etc/kafka/secrets
 
     kafka-ui:
         image: kafbat/kafka-ui:latest

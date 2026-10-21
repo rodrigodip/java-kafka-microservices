@@ -8,6 +8,7 @@ infra/data
 infra/data_dev
 infra/kafka_log
 infra/secrets
+infra/kafka
 infra/bucket
 .env
 

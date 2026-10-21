@@ -1,5 +1,7 @@
 package br.com.rodrigodip.invoicing.controller;
 
+import java.io.InputStream;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +25,7 @@ public class BucketController {
             return ResponseEntity.badRequest().body("Selecione um arquivo válido para testar.");
         }
 
-        try {
+        try (InputStream inputStream = file.getInputStream()) {
 
             // 2. Resolve o MediaType a partir da String enviada pelo arquivo
             MediaType resolvedMediaType = MediaType.parseMediaType(file.getContentType() != null

@@ -59,10 +59,13 @@ services:
             RUSTFS_ADDRESS: ":9000"
             RUSTFS_CONSOLE_ENABLE: "true"
             RUSTFS_CONSOLE_ADDRESS: ":9001"
-            RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-change-me-access}
-            RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-change-me-secret-key}
+            RUSTFS_ACCESS_KEY_FILE: /run/secrets/s3_client_access_key
+            RUSTFS_SECRET_KEY_FILE: /run/secrets/s3_client_secret_key
             RUSTFS_OBS_LOGGER_LEVEL: error
             RUSTFS_OBS_LOG_DIRECTORY: /var/log/rustfs/
+        secrets:
+            - s3_client_access_key
+            - s3_client_secret_key
         restart: unless-stopped
 
     kafka:
@@ -168,10 +171,17 @@ services:
         image: rodrigodip/invoicing-service:1.0.0
         container_name: invoicing_service_app
         ports:
-            - "${PRODUCTS_PORT_EXTERNAL}:8084"
+            - "${INVOICING_PORT_EXTERNAL}:8084"
+        environment:
+            S3_CLIENT_ENDPOINT: http://rustfs:9000
+        secrets:
+            - s3_client_access_key
+            - s3_client_secret_key
         depends_on:
             rustfs_perms:
                 condition: service_completed_successfully
+            rustfs:
+                condition: service_started
 
 secrets:
     db_super_user:
@@ -200,3 +210,10 @@ secrets:
         file: ./infra/secrets/orders_db_name
     psp_callback_api_key:
         file: ./infra/secrets/psp_callback_api_key
+    s3_client_access_key:
+        file: ./infra/secrets/s3_client_access_key
+    s3_client_secret_key:
+        file: ./infra/secrets/s3_client_secret_key
+
+volumes:
+    kafka_data:

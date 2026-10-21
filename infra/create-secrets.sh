@@ -22,6 +22,10 @@ generate_password() {
     openssl rand -base64 24 | tr -d "=+/" | cut -c1-32
 }
 
+generate_access_key() {
+    openssl rand -base64 32 | tr -dc 'A-Z0-9' | cut -c1-16
+}
+
 create_file_secret() {
     local NAME=$1
     local VALUE=$2
@@ -108,6 +112,13 @@ main() {
         echo -e "  ${GREEN}Generated new 'psp_callback_api_key' (value hidden)${NC}" >&2
     fi
 
+    # --- S3 / RustFS Credentials ---
+    # Internal-only credentials (rustfs + invoicing-service), so they can be
+    # rotated freely on every run, like the database passwords above.
+    echo -e "\n${BLUE}S3 / RustFS Credentials${NC}" >&2
+    S3_CLIENT_ACCESS_KEY=$(generate_access_key)
+    S3_CLIENT_SECRET_KEY=$(generate_password)
+
     # --- Summary ---
     echo -e "\n${BLUE}========================================${NC}" >&2
     echo -e "${BLUE}  Secret Summary${NC}" >&2
@@ -121,6 +132,8 @@ main() {
     echo -e "  ORDERS_DB_USER:  ${GREEN}${ORDERS_DB_USER}${NC}" >&2
     echo -e "  ORDERS_DB_NAME:  ${GREEN}${ORDERS_DB_NAME}${NC}" >&2
     echo -e "  PSP_CALLBACK_API_KEY: ${GREEN}(preserved or generated, value hidden)${NC}" >&2
+    echo -e "  S3_CLIENT_ACCESS_KEY: ${GREEN}(generated randomly, value hidden)${NC}" >&2
+    echo -e "  S3_CLIENT_SECRET_KEY: ${GREEN}(generated randomly, value hidden)${NC}" >&2
     echo -e "  ${YELLOW}(Passwords will be generated randomly)${NC}" >&2
     echo -e "${BLUE}========================================${NC}" >&2
 
@@ -152,6 +165,9 @@ main() {
     create_file_secret "orders_db_name"     "$ORDERS_DB_NAME"
 
     create_file_secret "psp_callback_api_key" "$PSP_CALLBACK_API_KEY"
+
+    create_file_secret "s3_client_access_key" "$S3_CLIENT_ACCESS_KEY"
+    create_file_secret "s3_client_secret_key" "$S3_CLIENT_SECRET_KEY"
 
     echo -e "\n${GREEN}All secrets created in ${SECRETS_DIR}/${NC}" >&2
     echo -e "${BLUE}Run 'make up' to start the stack.${NC}\n" >&2

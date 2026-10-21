@@ -87,7 +87,7 @@ services:
             KAFKA_INTER_BROKER_LISTENER_NAME: 'EXTERNAL'
         
             # Id do Cluster para inicialização automática do KRaft
-            CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+            CLUSTER_ID: 'EyWMRQKmTHa19iiNunqj8g'
         
             # Configurações de Partições e Offset
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1

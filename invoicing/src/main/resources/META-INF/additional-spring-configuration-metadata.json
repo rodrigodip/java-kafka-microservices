@@ -8,7 +8,7 @@
         },
         {
             "name": "app.s3-client.bucket-name",
-            "type": "java.time.String",
+            "type": "java.lang.String",
             "description": "S3 bucket name.",
             "defaultValue": "order-invoice"
         },
@@ -20,7 +20,7 @@
         },
         {
             "name": "app.s3-client.secret-key",
-            "type": "java.time.Duration",
+            "type": "java.lang.String",
             "description": "S3 bucket client secret key credential.",
             "defaultValue": "appUserSecret"
         }

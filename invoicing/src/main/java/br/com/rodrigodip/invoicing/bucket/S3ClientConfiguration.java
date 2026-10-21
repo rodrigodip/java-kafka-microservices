@@ -6,6 +6,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import lombok.RequiredArgsConstructor;
+
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -14,9 +16,10 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 @Configuration
 @EnableConfigurationProperties({ S3ClientProperties.class })
+@RequiredArgsConstructor
 public class S3ClientConfiguration {
 
-    private final S3ClientProperties properties = new S3ClientProperties();
+    private final S3ClientProperties properties;
 
     @Bean
     public S3Client buildS3Client() {

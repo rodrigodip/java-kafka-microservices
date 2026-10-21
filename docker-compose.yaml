@@ -44,7 +44,7 @@ services:
         command: sh -c "mkdir -p /fix_path/data /fix_path/logs && chown -R 10001:10001 /fix_path"
 
     rustfs:
-        image: rustfs/rustfs:latest   # consider pinning a specific version
+        image: rustfs/rustfs:1.0.3
         depends_on:
             rustfs_perms:
                 condition: service_completed_successfully
@@ -162,6 +162,16 @@ services:
                 condition: service_healthy
             kafka:
                 condition: service_started
+
+    invoicing-service:
+        build: ./invoicing
+        image: rodrigodip/invoicing-service:1.0.0
+        container_name: invoicing_service_app
+        ports:
+            - "${PRODUCTS_PORT_EXTERNAL}:8084"
+        depends_on:
+            rustfs_perms:
+                condition: service_completed_successfully
 
 secrets:
     db_super_user:

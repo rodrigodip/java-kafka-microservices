@@ -175,6 +175,7 @@ services:
             - "${INVOICING_PORT_EXTERNAL}:8084"
         environment:
             S3_CLIENT_ENDPOINT: http://rustfs:9000
+            S3_CLIENT_PUBLIC_ENDPOINT: ${S3_CLIENT_PUBLIC_ENDPOINT:-http://localhost:9000}
         secrets:
             - s3_client_access_key
             - s3_client_secret_key

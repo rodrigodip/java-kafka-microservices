@@ -10,6 +10,7 @@ server:
 app:
     s3-client:
         endpoint-url: ${S3_CLIENT_ENDPOINT:http://localhost:9000}
+        public-endpoint-url: ${S3_CLIENT_PUBLIC_ENDPOINT:http://localhost:9000}
         bucket-name: order-invoice
         access-key: ${s3_client_access_key:change-me-access}
         secret-key: ${s3_client_secret_key:change-me-secret-key}

@@ -43,7 +43,13 @@ public class S3ClientConfiguration {
 
     @Bean
     public S3Presigner s3Presigner() {
-        URI s3ClientEndpoint = URI.create(properties.getEndpointUrl());
+        String publicEndpointUrl = properties.getPublicEndpointUrl();
+
+        if (publicEndpointUrl == null || publicEndpointUrl.isBlank()) {
+            publicEndpointUrl = properties.getEndpointUrl();
+        }
+
+        URI s3ClientEndpoint = URI.create(publicEndpointUrl);
 
         AwsBasicCredentials credentials = AwsBasicCredentials.create(
                 properties.getAccessKey(),

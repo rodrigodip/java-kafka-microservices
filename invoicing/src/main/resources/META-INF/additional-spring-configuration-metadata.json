@@ -7,6 +7,12 @@
             "defaultValue": "http://localhost:9000"
         },
         {
+            "name": "app.s3-client.public-endpoint-url",
+            "type": "java.lang.String",
+            "description": "Base URL used to generate presigned URLs reachable by external clients. Overridden at runtime by the S3_CLIENT_PUBLIC_ENDPOINT environment variable.",
+            "defaultValue": "http://localhost:9000"
+        },
+        {
             "name": "app.s3-client.bucket-name",
             "type": "java.lang.String",
             "description": "S3 bucket name.",

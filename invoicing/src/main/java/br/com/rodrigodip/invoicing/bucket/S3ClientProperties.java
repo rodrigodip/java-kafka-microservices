@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class S3ClientProperties {
 
     private String endpointUrl;
+    private String publicEndpointUrl;
     private String bucketName;
     private String accessKey;
     private String secretKey;
@@ -16,6 +17,14 @@ public class S3ClientProperties {
 
     public String getEndpointUrl() {
         return endpointUrl;
+    }
+
+    public void setPublicEndpointUrl(String publicEndpointUrl) {
+        this.publicEndpointUrl = publicEndpointUrl;
+    }
+
+    public String getPublicEndpointUrl() {
+        return publicEndpointUrl;
     }
 
     public void setBucketName(String bucketName) {

@@ -176,6 +176,7 @@ services:
         environment:
             S3_CLIENT_ENDPOINT: http://rustfs:9000
             S3_CLIENT_PUBLIC_ENDPOINT: ${S3_CLIENT_PUBLIC_ENDPOINT:-http://localhost:9000}
+            KAFKA_BOOTSTRAP_SERVERS: kafka:19092
         secrets:
             - s3_client_access_key
             - s3_client_secret_key
@@ -183,6 +184,8 @@ services:
             rustfs_perms:
                 condition: service_completed_successfully
             rustfs:
+                condition: service_started
+            kafka:
                 condition: service_started
 
 secrets:

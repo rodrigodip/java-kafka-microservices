@@ -14,3 +14,10 @@ app:
         bucket-name: order-invoice
         access-key: ${s3_client_access_key:change-me-access}
         secret-key: ${s3_client_secret_key:change-me-secret-key}
+    kafka:
+        server-url: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+        group-id: invoicing-service
+        auto-offset-reset: earliest
+        concurrency: 1
+        topics:
+            paid-orders: order.paid

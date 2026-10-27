@@ -219,6 +219,14 @@ Fraquezas mapeadas durante o desenvolvimento, registradas para não se perderem:
 | 5 | Retry só parte de `PAYMENT_FAILED` | `PLACED` sem resposta do PSP não retrya | Reavaliar junto ao TTL |
 | 6 | `notes` é interno, sem garantia futura | Política interna pode vazar se o campo for exposto | Revisar conteúdo antes de expor |
 
+### Fluxo de Faturamento
+
+O serviço `invoicing` consome `order.paid`, gera o PDF da nota com OpenPDF e o armazena no bucket S3 sob a chave determinística `invoices/{orderId}.pdf`. Em seguida publica `invoice.generated` com `orderId`, `invoiceKey` e `invoiceUrl`.
+
+O `orders` consome `invoice.generated`, atualiza o pedido para `INVOICED`, preenche `invoice_url` e então publica `order.invoiced` para logística e demais consumidores.
+
+O download do PDF é feito por `GET /invoices/{orderId}/download`, que responde com um redirect para uma URL pré-assinada de curta duração. O upload manual de arquivos não faz parte do fluxo; `POST /invoices/upload` foi removido.
+
 ## 🚀 O que espero aprender
 
 Ao concluir este projeto, espero adquirir experiência prática no desenvolvimento e na arquitetura de sistemas backend distribuídos utilizando tecnologias modernas do ecossistema Java.O foco não será apenas aprender cada ferramenta individualmente, mas compreender **como essas tecnologias se integram para formar uma arquitetura completa baseada em microservices**.

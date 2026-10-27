@@ -176,6 +176,7 @@ services:
         environment:
             S3_CLIENT_ENDPOINT: http://rustfs:9000
             S3_CLIENT_PUBLIC_ENDPOINT: ${S3_CLIENT_PUBLIC_ENDPOINT:-http://localhost:9000}
+            INVOICING_PUBLIC_BASE_URL: ${INVOICING_PUBLIC_BASE_URL:-http://localhost:8084}
             KAFKA_BOOTSTRAP_SERVERS: kafka:19092
         secrets:
             - s3_client_access_key

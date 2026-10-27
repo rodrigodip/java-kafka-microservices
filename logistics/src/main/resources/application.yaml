@@ -1,0 +1,34 @@
+spring:
+    config:
+        import: "optional:configtree:/run/secrets/"
+    application:
+        name: logistics
+    datasource:
+        url: "jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5555}/${logistics_db_name:logistics}"
+        username: "${logistics_db_user:logistics_user}"
+        password: "${logistics_db_password:senha_logistics_123}"
+        driver-class-name: org.postgresql.Driver
+    jpa:
+        hibernate:
+            ddl-auto: none
+        show-sql: true
+        properties:
+            hibernate:
+                "[format_sql]": true
+    flyway:
+        enabled: true
+        baseline-on-migrate: true
+app:
+    kafka:
+        server-url: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+        group-id: logistics-service
+        auto-offset-reset: earliest
+        concurrency: 1
+        acks: all
+        retries: 3
+        max-block-ms: 5s
+        topics:
+            invoiced-orders: order.invoiced
+            shipped-orders: order.shipped
+server:
+    port: 8085

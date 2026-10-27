@@ -1,6 +1,12 @@
 {
     "properties": [
         {
+            "name": "app.invoicing.public-base-url",
+            "type": "java.lang.String",
+            "description": "Public base URL used to build stable invoice download links. Overridden at runtime by the INVOICING_PUBLIC_BASE_URL environment variable.",
+            "defaultValue": "http://localhost:8084"
+        },
+        {
             "name": "app.s3-client.endpoint-url",
             "type": "java.lang.String",
             "description": "Base URL of the S3 bucket client endpoint. Overridden at runtime by the S3_CLIENT_ENDPOINT environment variable.",
@@ -55,10 +61,34 @@
             "defaultValue": 1
         },
         {
+            "name": "app.kafka.acks",
+            "type": "java.lang.String",
+            "description": "Number of acknowledgements the producer requires from brokers before considering a request complete.",
+            "defaultValue": "all"
+        },
+        {
+            "name": "app.kafka.retries",
+            "type": "java.lang.Integer",
+            "description": "Number of times the producer retries sending a record when it fails.",
+            "defaultValue": 3
+        },
+        {
+            "name": "app.kafka.max-block-ms",
+            "type": "java.time.Duration",
+            "description": "Maximum time the producer blocks while waiting for metadata or buffer space before failing.",
+            "defaultValue": "5s"
+        },
+        {
             "name": "app.kafka.topics.paid-orders",
             "type": "java.lang.String",
             "description": "Kafka topic for paid orders consumed by the invoicing service.",
             "defaultValue": "order.paid"
+        },
+        {
+            "name": "app.kafka.topics.invoice-generated",
+            "type": "java.lang.String",
+            "description": "Kafka topic for invoice-generated events published by the invoicing service.",
+            "defaultValue": "invoice.generated"
         }
     ]
 }

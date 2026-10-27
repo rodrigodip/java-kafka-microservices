@@ -8,6 +8,8 @@ server:
     port: 8084
     
 app:
+    invoicing:
+        public-base-url: ${INVOICING_PUBLIC_BASE_URL:http://localhost:8084}
     s3-client:
         endpoint-url: ${S3_CLIENT_ENDPOINT:http://localhost:9000}
         public-endpoint-url: ${S3_CLIENT_PUBLIC_ENDPOINT:http://localhost:9000}
@@ -19,5 +21,9 @@ app:
         group-id: invoicing-service
         auto-offset-reset: earliest
         concurrency: 1
+        acks: all
+        retries: 3
+        max-block-ms: 5s
         topics:
             paid-orders: order.paid
+            invoice-generated: invoice.generated

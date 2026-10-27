@@ -20,11 +20,11 @@ import br.com.rodrigodip.invoicing.dto.InvoiceRepresentation;
 
 @Configuration
 @EnableKafka
-@EnableConfigurationProperties({ KafkaConsumerProperties.class })
+@EnableConfigurationProperties(KafkaProperties.class)
 public class KafkaConsumerConfiguration {
 
     @Bean
-    public ConsumerFactory<String, InvoiceRepresentation> consumerFactory(KafkaConsumerProperties properties) {
+    public ConsumerFactory<String, InvoiceRepresentation> consumerFactory(KafkaProperties properties) {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getServerUrl());
         configProps.put(ConsumerConfig.GROUP_ID_CONFIG, properties.getGroupId());
@@ -41,7 +41,7 @@ public class KafkaConsumerConfiguration {
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, InvoiceRepresentation> kafkaListenerContainerFactory(
             ConsumerFactory<String, InvoiceRepresentation> consumerFactory,
-            KafkaConsumerProperties properties) {
+            KafkaProperties properties) {
         ConcurrentKafkaListenerContainerFactory<String, InvoiceRepresentation> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
         factory.setConcurrency(properties.getConcurrency());

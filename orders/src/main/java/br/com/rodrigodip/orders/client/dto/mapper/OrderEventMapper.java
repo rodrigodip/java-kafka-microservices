@@ -45,6 +45,7 @@ public interface OrderEventMapper {
     @Mapping(source = "client.zipcode", target = "clientZipcode")
     @Mapping(source = "order.status", target = "status")
     @Mapping(source = "order.total", target = "total")
+    @Mapping(source = "order.invoiceUrl", target = "invoiceUrl")
     @Mapping(source = "itensList", target = "itensList")
     OrderInvoicedEvent toInvoicedEvent(Order order, ClientResponse client, List<OrderItemEvent> itensList);
 

@@ -17,5 +17,6 @@ public record OrderInvoicedEvent(
         String clientZipcode,
         OrderStatus status,
         BigDecimal total,
+        String invoiceUrl,
         List<OrderItemEvent> itensList) {
 }

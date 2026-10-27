@@ -42,6 +42,24 @@
             "defaultValue": "localhost:9092"
         },
         {
+            "name": "app.kafka.group-id",
+            "type": "java.lang.String",
+            "description": "Consumer group id used by the orders service to consume invoice-generated events.",
+            "defaultValue": "orders-service"
+        },
+        {
+            "name": "app.kafka.auto-offset-reset",
+            "type": "java.lang.String",
+            "description": "Offset reset policy when the orders consumer group has no committed offset.",
+            "defaultValue": "earliest"
+        },
+        {
+            "name": "app.kafka.concurrency",
+            "type": "java.lang.Integer",
+            "description": "Number of concurrent Kafka listener consumers.",
+            "defaultValue": 1
+        },
+        {
             "name": "app.kafka.acks",
             "type": "java.lang.String",
             "description": "Number of acknowledgements the producer requires from brokers before considering a request complete.",
@@ -64,6 +82,12 @@
             "type": "java.lang.String",
             "description": "Kafka topic for paid orders",
             "defaultValue": "order.paid"
+        },
+        {
+            "name": "app.kafka.topics.invoice-generated",
+            "type": "java.lang.String",
+            "description": "Kafka topic for invoice-generated events consumed by the orders service.",
+            "defaultValue": "invoice.generated"
         },
         {
             "name": "app.kafka.topics.invoiced-orders",

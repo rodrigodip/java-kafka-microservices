@@ -14,6 +14,7 @@ public record OrderResponse(
                 LocalDateTime orderDate,
                 String paymentKey,
                 Integer paymentAttempts,
+                String invoiceUrl,
                 PaymentResponse paymentData,
                 List<OrderItemResponse> itensList) {
 }

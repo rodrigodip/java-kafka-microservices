@@ -11,6 +11,9 @@ public class KafkaClientProperties {
 
     private Map<String, String> topics = new HashMap<>();
     private String serverUrl;
+    private String groupId = "orders-service";
+    private String autoOffsetReset = "earliest";
+    private int concurrency = 1;
     private String acks = "all";
     private int retries = 3;
     private Duration maxBlockMs = Duration.ofSeconds(5);
@@ -53,6 +56,30 @@ public class KafkaClientProperties {
 
     public void setMaxBlockMs(Duration maxBlockMs) {
         this.maxBlockMs = maxBlockMs;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getAutoOffsetReset() {
+        return autoOffsetReset;
+    }
+
+    public void setAutoOffsetReset(String autoOffsetReset) {
+        this.autoOffsetReset = autoOffsetReset;
+    }
+
+    public int getConcurrency() {
+        return concurrency;
+    }
+
+    public void setConcurrency(int concurrency) {
+        this.concurrency = concurrency;
     }
 
 }

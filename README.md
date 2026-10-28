@@ -218,6 +218,7 @@ Fraquezas mapeadas durante o desenvolvimento, registradas para não se perderem:
 | 4 | `PLACED` sem callback fica para sempre | Pedidos zumbis, sem retry | TTL + `EXPIRED` (fase Kafka) |
 | 5 | Retry só parte de `PAYMENT_FAILED` | `PLACED` sem resposta do PSP não retrya | Reavaliar junto ao TTL |
 | 6 | `notes` é interno, sem garantia futura | Política interna pode vazar se o campo for exposto | Revisar conteúdo antes de expor |
+| 7 | Publicação do `order.shipped` não é atômica com o commit (sem transactional outbox) | O evento pode ser publicado e a transação falhar, ou o oposto | Transactional outbox / CDC (Debezium) |
 
 ### Fluxo de Faturamento
 
@@ -226,6 +227,26 @@ O serviço `invoicing` consome `order.paid`, gera o PDF da nota com OpenPDF e o 
 O `orders` consome `invoice.generated`, atualiza o pedido para `INVOICED`, preenche `invoice_url` e então publica `order.invoiced` para logística e demais consumidores.
 
 O download do PDF é feito por `GET /invoices/{orderId}/download`, que responde com um redirect para uma URL pré-assinada de curta duração. O upload manual de arquivos não faz parte do fluxo; `POST /invoices/upload` foi removido.
+
+### Fluxo de Logística
+
+O serviço `logistics` consome `order.invoiced` e cria um `shipment` com status `PENDING`, mantendo um snapshot do cliente, endereço, itens, total e `invoiceUrl`.
+
+O operador lista os pedidos pendentes com `GET /shipments` e cadastra o código de rastreio com `PUT /shipments/{orderId}/tracking-code`:
+
+```json
+{
+  "trackingCode": "BR123456789"
+}
+```
+
+Ao cadastrar o código, o shipment passa para `SHIPPED` e o serviço publica `order.shipped` com o `trackingCode`.
+
+O `orders` consome `order.shipped`, atualiza o `tracking_code` do pedido e muda o status para `SHIPPED`. A operação é idempotente: eventos duplicados e reenvios do mesmo código não geram duplicidade.
+
+O filtro `GET /shipments?status=SHIPPED` permite consultar os pedidos já enviados.
+
+> **Nota:** em um volume PostgreSQL já existente, o `infra/init-wrapper.sh` não roda novamente. Para o novo serviço, crie o banco/usuário `logistics` manualmente ou recrie os volumes com `make clean` (destrutivo) antes de subir o stack. Como o `make create-secrets` regenera todas as senhas de banco, um volume antigo também exige atualização manual das senhas.
 
 ## 🚀 O que espero aprender
 
@@ -447,6 +468,7 @@ Weaknesses mapped during development, recorded so they are not lost:
 | 4 | `PLACED` without callback stays forever | Zombie orders, no retry | TTL + `EXPIRED` (Kafka phase) |
 | 5 | Retry only from `PAYMENT_FAILED` | `PLACED` with no PSP response cannot retry | Reassess alongside TTL |
 | 6 | `notes` is internal, with no future guarantee | Internal policy could leak if the field is exposed | Review content before exposing |
+| 7 | Publishing `order.shipped` is not atomic with the commit (no transactional outbox) | The event can be published while the transaction fails, or vice versa | Transactional outbox / CDC (Debezium) |
 
 ## 🚀 What I Expect to Learn
 

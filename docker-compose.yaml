@@ -28,6 +28,9 @@ services:
             - orders_db_user
             - orders_db_password
             - orders_db_name
+            - logistics_db_user
+            - logistics_db_password
+            - logistics_db_name
         restart: unless-stopped
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -189,6 +192,26 @@ services:
             kafka:
                 condition: service_started
 
+    logistics-service:
+        build: ./logistics
+        image: rodrigodip/logistics-service:1.0.0
+        container_name: logistics_service_app
+        ports:
+            - "${LOGISTICS_PORT_EXTERNAL}:8085"
+        environment:
+            DB_HOST: postgres-db
+            DB_PORT: "5432"
+            KAFKA_BOOTSTRAP_SERVERS: kafka:19092
+        secrets:
+            - logistics_db_user
+            - logistics_db_password
+            - logistics_db_name
+        depends_on:
+            postgres-db:
+                condition: service_healthy
+            kafka:
+                condition: service_started
+
 secrets:
     db_super_user:
         file: ./infra/secrets/db_super_user
@@ -214,6 +237,12 @@ secrets:
         file: ./infra/secrets/orders_db_password
     orders_db_name:
         file: ./infra/secrets/orders_db_name
+    logistics_db_user:
+        file: ./infra/secrets/logistics_db_user
+    logistics_db_password:
+        file: ./infra/secrets/logistics_db_password
+    logistics_db_name:
+        file: ./infra/secrets/logistics_db_name
     psp_callback_api_key:
         file: ./infra/secrets/psp_callback_api_key
     s3_client_access_key:

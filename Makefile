@@ -20,7 +20,7 @@ help: ## Mostra esta tela de ajuda com os comandos disponíveis
 
 # --- SECRETS ---
 check-secrets: ## Verifica se existem secrets e se estão atualizados
-	@if [ ! -f $(SECRETS_PATH)/secrets/db_super_password ] || [ ! -f $(SECRETS_PATH)/secrets/s3_client_access_key ] || [ ! -f $(SECRETS_PATH)/secrets/s3_client_secret_key ]; then \
+	@if [ ! -f $(SECRETS_PATH)/secrets/db_super_password ] || [ ! -f $(SECRETS_PATH)/secrets/s3_client_access_key ] || [ ! -f $(SECRETS_PATH)/secrets/s3_client_secret_key ] || [ ! -f $(SECRETS_PATH)/secrets/logistics_db_user ] || [ ! -f $(SECRETS_PATH)/secrets/logistics_db_password ] || [ ! -f $(SECRETS_PATH)/secrets/logistics_db_name ]; then \
 		echo "Secrets not found."; \
 		read -p "Create secrets now? (Y/n): " -n 1 -r; echo; \
 		if [ "$$REPLY" != "N" ] && [ "$$REPLY" != "n" ]; then \

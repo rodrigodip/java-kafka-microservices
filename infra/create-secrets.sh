@@ -100,6 +100,12 @@ main() {
     ORDERS_DB_PASSWORD=$(generate_password)
     ORDERS_DB_NAME=$(prompt_with_default "ORDERS_DB_NAME" "orders_db_name" "$ORDERS_DB_NAME")
 
+    # --- Logistics Database ---
+    echo -e "\n${BLUE}Logistics Database${NC}" >&2
+    LOGISTICS_DB_USER=$(prompt_with_default "LOGISTICS_DB_USER" "logistics_db_user" "$LOGISTICS_DB_USER")
+    LOGISTICS_DB_PASSWORD=$(generate_password)
+    LOGISTICS_DB_NAME=$(prompt_with_default "LOGISTICS_DB_NAME" "logistics_db_name" "$LOGISTICS_DB_NAME")
+
     # --- Orders PSP Callback ---
     # Shared secret: unlike DB passwords, this value is also held by the PSP,
     # so it must be preserved across rotations (generated only on first run).
@@ -131,6 +137,8 @@ main() {
     echo -e "  CLIENTS_DB_NAME:  ${GREEN}${CLIENTS_DB_NAME}${NC}" >&2
     echo -e "  ORDERS_DB_USER:  ${GREEN}${ORDERS_DB_USER}${NC}" >&2
     echo -e "  ORDERS_DB_NAME:  ${GREEN}${ORDERS_DB_NAME}${NC}" >&2
+    echo -e "  LOGISTICS_DB_USER: ${GREEN}${LOGISTICS_DB_USER}${NC}" >&2
+    echo -e "  LOGISTICS_DB_NAME: ${GREEN}${LOGISTICS_DB_NAME}${NC}" >&2
     echo -e "  PSP_CALLBACK_API_KEY: ${GREEN}(preserved or generated, value hidden)${NC}" >&2
     echo -e "  S3_CLIENT_ACCESS_KEY: ${GREEN}(generated randomly, value hidden)${NC}" >&2
     echo -e "  S3_CLIENT_SECRET_KEY: ${GREEN}(generated randomly, value hidden)${NC}" >&2
@@ -163,6 +171,10 @@ main() {
     create_file_secret "orders_db_user"     "$ORDERS_DB_USER"
     create_file_secret "orders_db_password" "$ORDERS_DB_PASSWORD"
     create_file_secret "orders_db_name"     "$ORDERS_DB_NAME"
+
+    create_file_secret "logistics_db_user"     "$LOGISTICS_DB_USER"
+    create_file_secret "logistics_db_password" "$LOGISTICS_DB_PASSWORD"
+    create_file_secret "logistics_db_name"     "$LOGISTICS_DB_NAME"
 
     create_file_secret "psp_callback_api_key" "$PSP_CALLBACK_API_KEY"
 

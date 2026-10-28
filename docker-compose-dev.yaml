@@ -16,6 +16,9 @@ services:
             CLIENTS_DB_USER: client_user
             CLIENTS_DB_PASSWORD: senha_clients_123
             CLIENTS_DB_NAME: clients
+            LOGISTICS_DB_USER: logistics_user
+            LOGISTICS_DB_PASSWORD: senha_logistics_123
+            LOGISTICS_DB_NAME: logistics
         ports:
             - "5555:5432"
         volumes:

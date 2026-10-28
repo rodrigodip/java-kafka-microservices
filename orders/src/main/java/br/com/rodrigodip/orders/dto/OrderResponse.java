@@ -15,6 +15,7 @@ public record OrderResponse(
                 String paymentKey,
                 Integer paymentAttempts,
                 String invoiceUrl,
+                String trackingCode,
                 PaymentResponse paymentData,
                 List<OrderItemResponse> itensList) {
 }

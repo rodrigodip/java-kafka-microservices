@@ -29,6 +29,7 @@ public interface OrderMapper {
     @Mapping(source = "paymentKey", target = "paymentKey")
     @Mapping(source = "paymentAttempts", target = "paymentAttempts")
     @Mapping(source = "invoiceUrl", target = "invoiceUrl")
+    @Mapping(source = "trackingCode", target = "trackingCode")
     @Mapping(source = "paymentData", target = "paymentData")
     @Mapping(source = "itensList", target = "itensList")
     OrderResponse toResponse(Order entity);

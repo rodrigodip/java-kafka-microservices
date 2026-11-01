@@ -213,12 +213,12 @@ Fraquezas mapeadas durante o desenvolvimento, registradas para não se perderem:
 | # | Limitação | Impacto | Mitigação prevista |
 |---|---|---|---|
 | 1 | **Nenhuma autenticação na API** — endpoints públicos; callback protegido apenas por segredo estático | Acesso indevido; sem identidade de chamador | AuthN/AuthZ (futuro); HMAC no callback em produção |
-| 2 | Retries concorrentes podem furar o teto | Cobrança além do limite | `@Version` no `Order` (optimistic locking) |
+| 2 | ~~Retries concorrentes podem furar o teto~~ ✔ | ~~Cobrança além do limite~~ | `@Version` no `Order` (optimistic locking) + `409 Conflict` |
 | 3 | Callback tardio com `paymentKey` antiga → 404 | Falha legítima descartada | Idempotency-key por tentativa |
 | 4 | `PLACED` sem callback fica para sempre | Pedidos zumbis, sem retry | TTL + `EXPIRED` (fase Kafka) |
 | 5 | Retry só parte de `PAYMENT_FAILED` | `PLACED` sem resposta do PSP não retrya | Reavaliar junto ao TTL |
 | 6 | `notes` é interno, sem garantia futura | Política interna pode vazar se o campo for exposto | Revisar conteúdo antes de expor |
-| 7 | Publicação do `order.shipped` não é atômica com o commit (sem transactional outbox) | O evento pode ser publicado e a transação falhar, ou o oposto | Transactional outbox / CDC (Debezium) |
+| 7 | ~~Publicação do `order.shipped` não é atômica com o commit (sem transactional outbox)~~ ✔ | ~~O evento pode ser publicado e a transação falhar, ou o oposto~~ | Transactional outbox (`orders` + `logistics`); `invoicing` via retry Kafka + chave S3 idempotente |
 
 ### Fluxo de Faturamento
 
@@ -247,6 +247,17 @@ O `orders` consome `order.shipped`, atualiza o `tracking_code` do pedido e muda 
 O filtro `GET /shipments?status=SHIPPED` permite consultar os pedidos já enviados.
 
 > **Nota:** em um volume PostgreSQL já existente, o `infra/init-wrapper.sh` não roda novamente. Para o novo serviço, crie o banco/usuário `logistics` manualmente ou recrie os volumes com `make clean` (destrutivo) antes de subir o stack. Como o `make create-secrets` regenera todas as senhas de banco, um volume antigo também exige atualização manual das senhas.
+
+### Transactional Outbox (consistência entre DB e evento)
+
+Para tornar a publicação de eventos atômica com a transação, `orders` e `logistics` gravam os eventos em uma tabela `outbox` na mesma transação da mudança de estado, e um relay agendado (`@Scheduled`) os publica no Kafka em segundo plano.
+
+- `orders` → `order.paid` e `order.invoiced`
+- `logistics` → `order.shipped`
+
+A publicação é *at-least-once*: se o processo cair entre o envio ao Kafka e a marcação da linha, o evento é republicado na próxima varredura — os consumidores já são idempotentes. O intervalo do relay é configurável via `app.outbox.poll-interval-ms` (padrão `1000`).
+
+O `invoicing` permanece publicando direto (sem outbox): ele não tem banco local, e o fluxo já é eventualmente consistente — o PDF é regravado em chave S3 determinística e o retry do consumidor Kafka garante a republicação de `invoice.generated`.
 
 ## 🚀 O que espero aprender
 
@@ -463,12 +474,23 @@ Weaknesses mapped during development, recorded so they are not lost:
 | # | Limitation | Impact | Planned mitigation |
 |---|---|---|---|
 | 1 | **No API authentication whatsoever** — public endpoints; callback protected only by a static secret | Unauthorized access; no caller identity | AuthN/AuthZ (future); HMAC on callback in production |
-| 2 | Concurrent retries can overshoot the cap | Charges beyond the limit | `@Version` on `Order` (optimistic locking) |
+| 2 | ~~Concurrent retries can overshoot the cap~~ ✔ | ~~Charges beyond the limit~~ | `@Version` on `Order` (optimistic locking) + `409 Conflict` |
 | 3 | Late callback with stale `paymentKey` → 404 | Legitimate failure discarded | Per-attempt idempotency key |
 | 4 | `PLACED` without callback stays forever | Zombie orders, no retry | TTL + `EXPIRED` (Kafka phase) |
 | 5 | Retry only from `PAYMENT_FAILED` | `PLACED` with no PSP response cannot retry | Reassess alongside TTL |
 | 6 | `notes` is internal, with no future guarantee | Internal policy could leak if the field is exposed | Review content before exposing |
-| 7 | Publishing `order.shipped` is not atomic with the commit (no transactional outbox) | The event can be published while the transaction fails, or vice versa | Transactional outbox / CDC (Debezium) |
+| 7 | ~~Publishing `order.shipped` is not atomic with the commit (no transactional outbox)~~ ✔ | ~~The event can be published while the transaction fails, or vice versa~~ | Transactional outbox (`orders` + `logistics`); `invoicing` via Kafka retry + idempotent S3 key |
+
+### Transactional Outbox (DB/event consistency)
+
+To make event publication atomic with the transaction, `orders` and `logistics` write events to an `outbox` table in the same transaction as the state change, and a scheduled relay (`@Scheduled`) publishes them to Kafka in the background.
+
+- `orders` → `order.paid` and `order.invoiced`
+- `logistics` → `order.shipped`
+
+Publication is *at-least-once*: if the process crashes between the Kafka send and marking the row, the event is republished on the next poll — consumers are already idempotent. The relay interval is configurable via `app.outbox.poll-interval-ms` (default `1000`).
+
+`invoicing` still publishes directly (no outbox): it has no local database, and the flow is already eventually consistent — the PDF is rewritten to a deterministic S3 key and the Kafka consumer retry guarantees `invoice.generated` republishing.
 
 ## 🚀 What I Expect to Learn
 

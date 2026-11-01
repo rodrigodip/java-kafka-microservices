@@ -3,6 +3,7 @@ package br.com.rodrigodip.orders.exceptions;
 import java.time.Instant;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -85,6 +86,22 @@ public class GlobalExceptionHandler {
 
 		return ResponseEntity
 				.status(HttpStatus.SERVICE_UNAVAILABLE)
+				.body(response);
+	}
+
+	@ExceptionHandler(OptimisticLockingFailureException.class)
+	public ResponseEntity<ErrorResponse> handleOptimisticLock(
+			OptimisticLockingFailureException ex, HttpServletRequest request) {
+
+		ErrorResponse response = new ErrorResponse(
+				Instant.now(),
+				HttpStatus.CONFLICT.value(),
+				HttpStatus.CONFLICT.getReasonPhrase(),
+				"Concurrent update detected; please retry",
+				request.getRequestURI());
+
+		return ResponseEntity
+				.status(HttpStatus.CONFLICT)
 				.body(response);
 	}
 

@@ -1,7 +1,5 @@
 package br.com.rodrigodip.orders.service;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,20 +17,22 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderInvoiceService {
 
     private final OrderRepository orderRepository;
+    private final OrderEventPublisher orderEventPublisher;
 
     @Transactional
-    public Optional<Order> markAsInvoiced(Long orderId, String invoiceUrl) {
+    public void markAsInvoiced(Long orderId, String invoiceUrl) {
         Order order = orderRepository.findByIdWithItems(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         if (order.getStatus() == OrderStatus.PREPARING_SHIPMENT || order.getStatus() == OrderStatus.SHIPPED) {
             log.info("Order {} already moved past invoicing (status={})", orderId, order.getStatus());
-            return Optional.empty();
+            return;
         }
 
         if (order.getStatus() == OrderStatus.INVOICED) {
             log.info("Order {} is already invoiced; republishing order.invoiced", orderId);
-            return Optional.of(order);
+            orderEventPublisher.publishInvoiced(order);
+            return;
         }
 
         if (order.getStatus() != OrderStatus.PAID) {
@@ -42,8 +42,9 @@ public class OrderInvoiceService {
         order.setStatus(OrderStatus.INVOICED);
         order.setInvoiceUrl(invoiceUrl);
 
-        log.info("Order {} marked as INVOICED", orderId);
+        Order saved = orderRepository.save(order);
+        orderEventPublisher.publishInvoiced(saved);
 
-        return Optional.of(orderRepository.save(order));
+        log.info("Order {} marked as INVOICED", orderId);
     }
 }

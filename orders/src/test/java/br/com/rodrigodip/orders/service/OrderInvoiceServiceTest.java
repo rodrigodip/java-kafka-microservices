@@ -27,6 +27,9 @@ class OrderInvoiceServiceTest {
     @Mock
     private OrderRepository orderRepository;
 
+    @Mock
+    private OrderEventPublisher orderEventPublisher;
+
     @InjectMocks
     private OrderInvoiceService orderInvoiceService;
 
@@ -36,23 +39,23 @@ class OrderInvoiceServiceTest {
         when(orderRepository.findByIdWithItems(1L)).thenReturn(Optional.of(order));
         when(orderRepository.save(order)).thenReturn(order);
 
-        Optional<Order> result = orderInvoiceService.markAsInvoiced(1L, "http://invoicing/invoices/1/download");
+        orderInvoiceService.markAsInvoiced(1L, "http://invoicing/invoices/1/download");
 
-        assertThat(result).contains(order);
         assertThat(order.getStatus()).isEqualTo(OrderStatus.INVOICED);
         assertThat(order.getInvoiceUrl()).isEqualTo("http://invoicing/invoices/1/download");
         verify(orderRepository).save(order);
+        verify(orderEventPublisher).publishInvoiced(order);
     }
 
     @Test
-    void returnsAlreadyInvoicedOrderForIdempotentRepublish() {
+    void republishesAlreadyInvoicedOrder() {
         Order order = order(OrderStatus.INVOICED);
         when(orderRepository.findByIdWithItems(1L)).thenReturn(Optional.of(order));
 
-        Optional<Order> result = orderInvoiceService.markAsInvoiced(1L, "http://invoicing/invoices/1/download");
+        orderInvoiceService.markAsInvoiced(1L, "http://invoicing/invoices/1/download");
 
-        assertThat(result).contains(order);
         verify(orderRepository, never()).save(any());
+        verify(orderEventPublisher).publishInvoiced(order);
     }
 
     @Test
@@ -60,10 +63,10 @@ class OrderInvoiceServiceTest {
         Order order = order(OrderStatus.SHIPPED);
         when(orderRepository.findByIdWithItems(1L)).thenReturn(Optional.of(order));
 
-        Optional<Order> result = orderInvoiceService.markAsInvoiced(1L, "http://invoicing/invoices/1/download");
+        orderInvoiceService.markAsInvoiced(1L, "http://invoicing/invoices/1/download");
 
-        assertThat(result).isEmpty();
         verify(orderRepository, never()).save(any());
+        verify(orderEventPublisher, never()).publishInvoiced(any());
     }
 
     @Test

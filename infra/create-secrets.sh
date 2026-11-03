@@ -106,6 +106,13 @@ main() {
     LOGISTICS_DB_PASSWORD=$(generate_password)
     LOGISTICS_DB_NAME=$(prompt_with_default "LOGISTICS_DB_NAME" "logistics_db_name" "$LOGISTICS_DB_NAME")
 
+    # --- Keycloak Database ---
+    echo -e "\n${BLUE}Keycloak Database${NC}" >&2
+    KEYCLOAK_DB_USER=$(prompt_with_default "KEYCLOAK_DB_USER" "keycloak_db_user" "$KEYCLOAK_DB_USER")
+    KEYCLOAK_DB_PASSWORD=$(generate_password)
+    KEYCLOAK_DB_NAME=$(prompt_with_default "KEYCLOAK_DB_NAME" "keycloak_db_name" "$KEYCLOAK_DB_NAME")
+    KEYCLOAK_ADMIN_PASSWORD=$(generate_password)
+
     # --- Orders PSP Callback ---
     # Shared secret: unlike DB passwords, this value is also held by the PSP,
     # so it must be preserved across rotations (generated only on first run).
@@ -139,6 +146,8 @@ main() {
     echo -e "  ORDERS_DB_NAME:  ${GREEN}${ORDERS_DB_NAME}${NC}" >&2
     echo -e "  LOGISTICS_DB_USER: ${GREEN}${LOGISTICS_DB_USER}${NC}" >&2
     echo -e "  LOGISTICS_DB_NAME: ${GREEN}${LOGISTICS_DB_NAME}${NC}" >&2
+    echo -e "  KEYCLOAK_DB_USER: ${GREEN}${KEYCLOAK_DB_USER}${NC}" >&2
+    echo -e "  KEYCLOAK_DB_NAME: ${GREEN}${KEYCLOAK_DB_NAME}${NC}" >&2
     echo -e "  PSP_CALLBACK_API_KEY: ${GREEN}(preserved or generated, value hidden)${NC}" >&2
     echo -e "  S3_CLIENT_ACCESS_KEY: ${GREEN}(generated randomly, value hidden)${NC}" >&2
     echo -e "  S3_CLIENT_SECRET_KEY: ${GREEN}(generated randomly, value hidden)${NC}" >&2
@@ -175,6 +184,11 @@ main() {
     create_file_secret "logistics_db_user"     "$LOGISTICS_DB_USER"
     create_file_secret "logistics_db_password" "$LOGISTICS_DB_PASSWORD"
     create_file_secret "logistics_db_name"     "$LOGISTICS_DB_NAME"
+
+    create_file_secret "keycloak_db_user"       "$KEYCLOAK_DB_USER"
+    create_file_secret "keycloak_db_password"   "$KEYCLOAK_DB_PASSWORD"
+    create_file_secret "keycloak_db_name"       "$KEYCLOAK_DB_NAME"
+    create_file_secret "keycloak_admin_password" "$KEYCLOAK_ADMIN_PASSWORD"
 
     create_file_secret "psp_callback_api_key" "$PSP_CALLBACK_API_KEY"
 

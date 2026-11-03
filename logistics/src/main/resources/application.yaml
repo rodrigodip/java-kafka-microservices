@@ -18,6 +18,11 @@ spring:
     flyway:
         enabled: true
         baseline-on-migrate: true
+    security:
+        oauth2:
+            resourceserver:
+                jwt:
+                    jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8086/realms/java-ms-kafka/protocol/openid-connect/certs}
 app:
     kafka:
         server-url: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}

@@ -97,6 +97,8 @@ As principais tecnologias e conceitos utilizados neste repositório são:
 - PostgreSQL
 - MinIO: Um Object Storage compatível com Amazon S3
 - JasperReports
+- Keycloak
+- OAuth2 / OpenID Connect
 - REST APIs
 - Webhooks
 - Event-Driven Architecture
@@ -212,7 +214,7 @@ Fraquezas mapeadas durante o desenvolvimento, registradas para não se perderem:
 
 | # | Limitação | Impacto | Mitigação prevista |
 |---|---|---|---|
-| 1 | **Nenhuma autenticação na API** — endpoints públicos; callback protegido apenas por segredo estático | Acesso indevido; sem identidade de chamador | AuthN/AuthZ (futuro); HMAC no callback em produção |
+| 1 | ~~Nenhuma autenticação na API~~ ✔ — endpoints protegidos por JWT (Keycloak); callback do PSP segue com segredo estático | ~~Acesso indevido; sem identidade de chamador~~ | AuthN/AuthZ via Keycloak + RBAC; HMAC no callback em produção (pendente) |
 | 2 | ~~Retries concorrentes podem furar o teto~~ ✔ | ~~Cobrança além do limite~~ | `@Version` no `Order` (optimistic locking) + `409 Conflict` |
 | 3 | Callback tardio com `paymentKey` antiga → 404 | Falha legítima descartada | Idempotency-key por tentativa |
 | 4 | `PLACED` sem callback fica para sempre | Pedidos zumbis, sem retry | TTL + `EXPIRED` (fase Kafka) |
@@ -258,6 +260,37 @@ Para tornar a publicação de eventos atômica com a transação, `orders` e `lo
 A publicação é *at-least-once*: se o processo cair entre o envio ao Kafka e a marcação da linha, o evento é republicado na próxima varredura — os consumidores já são idempotentes. O intervalo do relay é configurável via `app.outbox.poll-interval-ms` (padrão `1000`).
 
 O `invoicing` permanece publicando direto (sem outbox): ele não tem banco local, e o fluxo já é eventualmente consistente — o PDF é regravado em chave S3 determinística e o retry do consumidor Kafka garante a republicação de `invoice.generated`.
+
+### Autenticação e Autorização (Keycloak)
+
+Os 5 serviços são *resource servers* OAuth2: validam JWTs emitidos pelo Keycloak e aplicam RBAC por *realm roles*.
+
+- O Keycloak sobe junto com o stack (`make up`), exposto em `http://localhost:8086` (realm `java-ms-kafka`).
+- Roles de realm: `customer`, `operator`, `admin`.
+- Os serviços configuram `spring.security.oauth2.resourceserver.jwt.jwk-set-uri` (via `KEYCLOAK_JWK_SET_URI`), que valida a **assinatura** do token. Em produção, troque por `issuer-uri` para validar também o `iss`.
+
+**Matriz RBAC:**
+
+| Endpoint | anônimo | customer | operator | admin |
+|---|---|---|---|---|
+| `GET /products*` | ✅ | ✅ | ✅ | ✅ |
+| `POST /products` | — | — | ✅ | ✅ |
+| `GET /clients*` | — | — | ✅ | ✅ |
+| `POST /clients` | — | ✅ | ✅ | ✅ |
+| `POST/GET /orders*` | — | ✅ | ✅ | ✅ |
+| `POST /orders/payment-callback` | HMAC (PSP) | — | — | — |
+| `GET /invoices/{orderId}/download` | — | ✅ | ✅ | ✅ |
+| `GET/PUT /shipments*` | — | — | ✅ | ✅ |
+
+**Obtendo um token (testes):**
+
+```bash
+curl -s -X POST http://localhost:8086/realms/java-ms-kafka/protocol/openid-connect/token \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'client_id=api&grant_type=password&username=alice&password=alice'
+```
+
+Use `alice` / `bob` / `admin` (senha = usuário) para `customer` / `operator` / `admin` e envie o `access_token` no header `Authorization: Bearer <token>`. No Bruno, a pasta `auth` tem requests prontas para obter cada token.
 
 ## 🚀 O que espero aprender
 
@@ -358,6 +391,8 @@ The main technologies and tools covered in this repository include:
 - PostgreSQL
 - MinIO: a Amazon S3-compatible Object Storage
 - JasperReports
+- Keycloak
+- OAuth2 / OpenID Connect
 - REST APIs
 - Webhooks
 - Event-Driven Architecture
@@ -473,7 +508,7 @@ Weaknesses mapped during development, recorded so they are not lost:
 
 | # | Limitation | Impact | Planned mitigation |
 |---|---|---|---|
-| 1 | **No API authentication whatsoever** — public endpoints; callback protected only by a static secret | Unauthorized access; no caller identity | AuthN/AuthZ (future); HMAC on callback in production |
+| 1 | ~~No API authentication whatsoever~~ ✔ — endpoints protected by JWT (Keycloak); PSP callback still uses a static secret | ~~Unauthorized access; no caller identity~~ | AuthN/AuthZ via Keycloak + RBAC; HMAC on callback in production (pending) |
 | 2 | ~~Concurrent retries can overshoot the cap~~ ✔ | ~~Charges beyond the limit~~ | `@Version` on `Order` (optimistic locking) + `409 Conflict` |
 | 3 | Late callback with stale `paymentKey` → 404 | Legitimate failure discarded | Per-attempt idempotency key |
 | 4 | `PLACED` without callback stays forever | Zombie orders, no retry | TTL + `EXPIRED` (Kafka phase) |
@@ -491,6 +526,37 @@ To make event publication atomic with the transaction, `orders` and `logistics` 
 Publication is *at-least-once*: if the process crashes between the Kafka send and marking the row, the event is republished on the next poll — consumers are already idempotent. The relay interval is configurable via `app.outbox.poll-interval-ms` (default `1000`).
 
 `invoicing` still publishes directly (no outbox): it has no local database, and the flow is already eventually consistent — the PDF is rewritten to a deterministic S3 key and the Kafka consumer retry guarantees `invoice.generated` republishing.
+
+### Authentication & Authorization (Keycloak)
+
+The 5 services are OAuth2 *resource servers*: they validate JWTs issued by Keycloak and apply RBAC by *realm roles*.
+
+- Keycloak starts with the stack (`make up`), exposed at `http://localhost:8086` (realm `java-ms-kafka`).
+- Realm roles: `customer`, `operator`, `admin`.
+- Services configure `spring.security.oauth2.resourceserver.jwt.jwk-set-uri` (via `KEYCLOAK_JWK_SET_URI`), which validates the token **signature**. In production, switch to `issuer-uri` to also validate `iss`.
+
+**RBAC matrix:**
+
+| Endpoint | anonymous | customer | operator | admin |
+|---|---|---|---|---|
+| `GET /products*` | ✅ | ✅ | ✅ | ✅ |
+| `POST /products` | — | — | ✅ | ✅ |
+| `GET /clients*` | — | — | ✅ | ✅ |
+| `POST /clients` | — | ✅ | ✅ | ✅ |
+| `POST/GET /orders*` | — | ✅ | ✅ | ✅ |
+| `POST /orders/payment-callback` | HMAC (PSP) | — | — | — |
+| `GET /invoices/{orderId}/download` | — | ✅ | ✅ | ✅ |
+| `GET/PUT /shipments*` | — | — | ✅ | ✅ |
+
+**Getting a token (testing):**
+
+```bash
+curl -s -X POST http://localhost:8086/realms/java-ms-kafka/protocol/openid-connect/token \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'client_id=api&grant_type=password&username=alice&password=alice'
+```
+
+Use `alice` / `bob` / `admin` (password = username) for `customer` / `operator` / `admin` and send the `access_token` in the `Authorization: Bearer <token>` header. In Bruno, the `auth` folder has ready-to-run token requests.
 
 ## 🚀 What I Expect to Learn
 

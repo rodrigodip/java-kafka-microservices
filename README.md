@@ -99,6 +99,7 @@ As principais tecnologias e conceitos utilizados neste repositório são:
 - JasperReports
 - Keycloak
 - OAuth2 / OpenID Connect
+- Spring Cloud Gateway
 - REST APIs
 - Webhooks
 - Event-Driven Architecture
@@ -292,6 +293,23 @@ curl -s -X POST http://localhost:8086/realms/java-ms-kafka/protocol/openid-conne
 
 Use `alice` / `bob` / `admin` (senha = usuário) para `customer` / `operator` / `admin` e envie o `access_token` no header `Authorization: Bearer <token>`. No Bruno, a pasta `auth` tem requests prontas para obter cada token.
 
+### API Gateway (Spring Cloud Gateway)
+
+Um único ponto de entrada em `http://localhost:8087` roteia para os serviços e aplica preocupações transversais. A validação de JWT continua em cada serviço (Fase 1); o gateway foca em roteamento, CORS e correlation-id.
+
+| Path | Serviço |
+|---|---|
+| `/products/**` | products (8081) |
+| `/clients/**` | clients (8082) |
+| `/orders/**` | orders (8083) |
+| `/invoices/**` | invoicing (8084) |
+| `/shipments/**` | logistics (8085) |
+
+- Toda request recebe um `X-Request-Id` (gerado quando ausente), propagado aos serviços e devolvido na resposta.
+- CORS permissivo configurado no gateway (ajustar antes de produção).
+
+Exemplo: `curl http://localhost:8087/products` ou `curl -H "Authorization: Bearer <token>" http://localhost:8087/orders`.
+
 ## 🚀 O que espero aprender
 
 Ao concluir este projeto, espero adquirir experiência prática no desenvolvimento e na arquitetura de sistemas backend distribuídos utilizando tecnologias modernas do ecossistema Java.O foco não será apenas aprender cada ferramenta individualmente, mas compreender **como essas tecnologias se integram para formar uma arquitetura completa baseada em microservices**.
@@ -393,6 +411,7 @@ The main technologies and tools covered in this repository include:
 - JasperReports
 - Keycloak
 - OAuth2 / OpenID Connect
+- Spring Cloud Gateway
 - REST APIs
 - Webhooks
 - Event-Driven Architecture
@@ -557,6 +576,23 @@ curl -s -X POST http://localhost:8086/realms/java-ms-kafka/protocol/openid-conne
 ```
 
 Use `alice` / `bob` / `admin` (password = username) for `customer` / `operator` / `admin` and send the `access_token` in the `Authorization: Bearer <token>` header. In Bruno, the `auth` folder has ready-to-run token requests.
+
+### API Gateway (Spring Cloud Gateway)
+
+A single entry point at `http://localhost:8087` routes to the services and applies cross-cutting concerns. JWT validation remains in each service (Phase 1); the gateway focuses on routing, CORS and correlation id.
+
+| Path | Service |
+|---|---|
+| `/products/**` | products (8081) |
+| `/clients/**` | clients (8082) |
+| `/orders/**` | orders (8083) |
+| `/invoices/**` | invoicing (8084) |
+| `/shipments/**` | logistics (8085) |
+
+- Every request gets an `X-Request-Id` (generated when absent), forwarded to the services and echoed on the response.
+- Permissive CORS configured at the gateway (tighten before production).
+
+Example: `curl http://localhost:8087/products` or `curl -H "Authorization: Bearer <token>" http://localhost:8087/orders`.
 
 ## 🚀 What I Expect to Learn
 

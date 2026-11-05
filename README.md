@@ -201,13 +201,23 @@ make up              # Reinicie com os novos secrets
 
 ### Segredo do Callback PSP (Orders)
 
-O endpoint `POST /orders/payment-callback` exige o header `apiKey` com o segredo compartilhado do PSP (`app.payment.callback-api-key`). Sem ele, qualquer um com o `paymentKey` de um pedido poderia forjar callbacks.
+O endpoint `POST /orders/payment-callback` exige o header `X-Signature` com a assinatura **HMAC-SHA256** do corpo cru da requisição, calculada com o segredo compartilhado do PSP (`app.payment.callback-api-key`). Sem assinatura válida, qualquer um com o `paymentKey` de um pedido poderia forjar callbacks.
 
 - O segredo vive em `infra/secrets/psp_callback_api_key`, criado pelo `make create-secrets`
 - Diferente das senhas de banco, ele é **gerado uma única vez e preservado nas rotações** — o PSP guarda uma cópia, então regenerar quebraria o callback
 - Precedência: arquivo de secret → `PSP_CALLBACK_API_KEY` → `dev-callback-secret` (somente dev local)
-- Testes locais: use o valor do arquivo no header `apiKey` das requisições de callback (Bruno)
-- Chave inválida → `401`, antes de qualquer lookup (sem revelar se o pedido existe)
+- Assinatura: hex de `HMAC-SHA256(corpo cru, segredo)`, enviada no header `X-Signature`
+- Assinatura inválida → `401`, antes de qualquer lookup (sem revelar se o pedido existe)
+
+Exemplo (curl):
+
+```bash
+SECRET=$(cat infra/secrets/psp_callback_api_key)
+BODY='{"id":1,"paymentKey":"...","status":true,"notes":"ok"}'
+SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$SECRET" | sed 's/.*= //')
+curl -X POST http://localhost:8087/orders/payment-callback \
+  -H 'Content-Type: application/json' -H "X-Signature: $SIG" -d "$BODY"
+```
 
 ### Limitações Conhecidas
 
@@ -215,11 +225,11 @@ Fraquezas mapeadas durante o desenvolvimento, registradas para não se perderem:
 
 | # | Limitação | Impacto | Mitigação prevista |
 |---|---|---|---|
-| 1 | ~~Nenhuma autenticação na API~~ ✔ — endpoints protegidos por JWT (Keycloak); callback do PSP segue com segredo estático | ~~Acesso indevido; sem identidade de chamador~~ | AuthN/AuthZ via Keycloak + RBAC; HMAC no callback em produção (pendente) |
+| 1 | ~~Nenhuma autenticação na API~~ ✔ — endpoints protegidos por JWT (Keycloak); callback do PSP protegido por HMAC-SHA256 | ~~Acesso indevido; sem identidade de chamador~~ | AuthN/AuthZ via Keycloak + RBAC; HMAC no callback ✔ |
 | 2 | ~~Retries concorrentes podem furar o teto~~ ✔ | ~~Cobrança além do limite~~ | `@Version` no `Order` (optimistic locking) + `409 Conflict` |
-| 3 | Callback tardio com `paymentKey` antiga → 404 | Falha legítima descartada | Idempotency-key por tentativa |
-| 4 | `PLACED` sem callback fica para sempre | Pedidos zumbis, sem retry | TTL + `EXPIRED` (fase Kafka) |
-| 5 | Retry só parte de `PAYMENT_FAILED` | `PLACED` sem resposta do PSP não retrya | Reavaliar junto ao TTL |
+| 3 | ~~Callback tardio com `paymentKey` antiga → 404~~ ✔ | ~~Falha legítima descartada~~ | Callback idempotente: chave antiga vira no-op (200), não 404 |
+| 4 | ~~`PLACED` sem callback fica para sempre~~ ✔ | ~~Pedidos zumbis, sem retry~~ | TTL + status `EXPIRED` (scheduler) |
+| 5 | ~~Retry só parte de `PAYMENT_FAILED`~~ ✔ | ~~`PLACED` sem resposta do PSP não retrya~~ | Retry permitido de `PLACED`, `PAYMENT_FAILED` e `EXPIRED` |
 | 6 | `notes` é interno, sem garantia futura | Política interna pode vazar se o campo for exposto | Revisar conteúdo antes de expor |
 | 7 | ~~Publicação do `order.shipped` não é atômica com o commit (sem transactional outbox)~~ ✔ | ~~O evento pode ser publicado e a transação falhar, ou o oposto~~ | Transactional outbox (`orders` + `logistics`); `invoicing` via retry Kafka + chave S3 idempotente |
 
@@ -513,13 +523,23 @@ make up              # Restart with new secrets
 
 ### PSP Callback Secret (Orders)
 
-The `POST /orders/payment-callback` endpoint requires the `apiKey` header with the PSP shared secret (`app.payment.callback-api-key`). Without it, anyone holding an order's `paymentKey` could forge callbacks.
+The `POST /orders/payment-callback` endpoint requires the `X-Signature` header carrying an **HMAC-SHA256** signature of the raw request body, computed with the PSP shared secret (`app.payment.callback-api-key`). Without a valid signature, anyone holding an order's `paymentKey` could forge callbacks.
 
 - The secret lives in `infra/secrets/psp_callback_api_key`, created by `make create-secrets`
 - Unlike DB passwords, it is **generated once and preserved across rotations** — the PSP holds a copy, so regenerating would break the callback
 - Precedence: secret file → `PSP_CALLBACK_API_KEY` → `dev-callback-secret` (local dev only)
-- Local testing: use the file value in the `apiKey` header of callback requests (Bruno)
-- Invalid key → `401`, before any lookup (without revealing whether the order exists)
+- Signature: hex `HMAC-SHA256(raw body, secret)`, sent in the `X-Signature` header
+- Invalid signature → `401`, before any lookup (without revealing whether the order exists)
+
+Example (curl):
+
+```bash
+SECRET=$(cat infra/secrets/psp_callback_api_key)
+BODY='{"id":1,"paymentKey":"...","status":true,"notes":"ok"}'
+SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$SECRET" | sed 's/.*= //')
+curl -X POST http://localhost:8087/orders/payment-callback \
+  -H 'Content-Type: application/json' -H "X-Signature: $SIG" -d "$BODY"
+```
 
 ### Known Limitations
 
@@ -527,11 +547,11 @@ Weaknesses mapped during development, recorded so they are not lost:
 
 | # | Limitation | Impact | Planned mitigation |
 |---|---|---|---|
-| 1 | ~~No API authentication whatsoever~~ ✔ — endpoints protected by JWT (Keycloak); PSP callback still uses a static secret | ~~Unauthorized access; no caller identity~~ | AuthN/AuthZ via Keycloak + RBAC; HMAC on callback in production (pending) |
+| 1 | ~~No API authentication whatsoever~~ ✔ — endpoints protected by JWT (Keycloak); PSP callback protected by HMAC-SHA256 | ~~Unauthorized access; no caller identity~~ | AuthN/AuthZ via Keycloak + RBAC; HMAC on callback ✔ |
 | 2 | ~~Concurrent retries can overshoot the cap~~ ✔ | ~~Charges beyond the limit~~ | `@Version` on `Order` (optimistic locking) + `409 Conflict` |
-| 3 | Late callback with stale `paymentKey` → 404 | Legitimate failure discarded | Per-attempt idempotency key |
-| 4 | `PLACED` without callback stays forever | Zombie orders, no retry | TTL + `EXPIRED` (Kafka phase) |
-| 5 | Retry only from `PAYMENT_FAILED` | `PLACED` with no PSP response cannot retry | Reassess alongside TTL |
+| 3 | ~~Late callback with stale `paymentKey` → 404~~ ✔ | ~~Legitimate failure discarded~~ | Idempotent callback: stale key becomes a no-op (200), not 404 |
+| 4 | ~~`PLACED` without callback stays forever~~ ✔ | ~~Zombie orders, no retry~~ | TTL + `EXPIRED` status (scheduler) |
+| 5 | ~~Retry only from `PAYMENT_FAILED`~~ ✔ | ~~`PLACED` with no PSP response cannot retry~~ | Retry allowed from `PLACED`, `PAYMENT_FAILED` and `EXPIRED` |
 | 6 | `notes` is internal, with no future guarantee | Internal policy could leak if the field is exposed | Review content before exposing |
 | 7 | ~~Publishing `order.shipped` is not atomic with the commit (no transactional outbox)~~ ✔ | ~~The event can be published while the transaction fails, or vice versa~~ | Transactional outbox (`orders` + `logistics`); `invoicing` via Kafka retry + idempotent S3 key |
 

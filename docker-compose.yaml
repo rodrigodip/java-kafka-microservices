@@ -247,6 +247,19 @@ services:
                 condition: service_healthy
         restart: unless-stopped
 
+    gateway-service:
+        build: ./gateway
+        image: rodrigodip/gateway-service:1.0.0
+        container_name: gateway_service_app
+        ports:
+            - "${GATEWAY_PORT_EXTERNAL}:8087"
+        depends_on:
+            - product-service
+            - client-service
+            - order-service
+            - invoicing-service
+            - logistics-service
+
 secrets:
     db_super_user:
         file: ./infra/secrets/db_super_user

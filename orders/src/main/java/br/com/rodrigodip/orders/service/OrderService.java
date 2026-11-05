@@ -1,6 +1,8 @@
 package br.com.rodrigodip.orders.service;
 
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,14 +53,21 @@ public class OrderService {
         return order;
     }
 
+    private static final Set<OrderStatus> RETRYABLE_STATUSES = EnumSet.of(
+            OrderStatus.PLACED,
+            OrderStatus.PAYMENT_FAILED,
+            OrderStatus.EXPIRED);
+
     @Transactional(noRollbackFor = PaymentRetriesExhaustedException.class)
     public Order PaymentRetry(Long id, PaymentData paymentData) {
 
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
 
-        if (order.getStatus() != OrderStatus.PAYMENT_FAILED) {
-            throw new InvalidOrderStatusException(id, order.getStatus(), OrderStatus.PAYMENT_FAILED);
+        if (!RETRYABLE_STATUSES.contains(order.getStatus())) {
+            throw new InvalidOrderStatusException(
+                    "Order [" + id + "] has status [" + order.getStatus()
+                            + "] but must be PLACED, PAYMENT_FAILED or EXPIRED to retry payment.");
         }
 
         if (order.getPaymentAttempts() >= paymentProperties.getMaxAttempts()) {

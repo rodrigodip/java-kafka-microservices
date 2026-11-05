@@ -7,4 +7,8 @@ public class InvalidOrderStatusException extends RuntimeException {
     public InvalidOrderStatusException(Long orderId, OrderStatus actual, OrderStatus expected) {
         super("Order [" + orderId + "] has status [" + actual + "] but [" + expected + "] was expected.");
     }
+
+    public InvalidOrderStatusException(String message) {
+        super(message);
+    }
 }

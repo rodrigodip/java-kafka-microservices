@@ -33,6 +33,8 @@ app:
     payment:
         max-attempts: 3
         callback-api-key: ${psp_callback_api_key:${PSP_CALLBACK_API_KEY:dev-callback-secret}}
+        placed-ttl: 5m
+        expiration-interval-ms: 60000
     kafka:
         server-url: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
         group-id: orders-service

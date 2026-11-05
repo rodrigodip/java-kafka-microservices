@@ -1,18 +1,22 @@
 package br.com.rodrigodip.orders.service;
 
+import java.util.EnumSet;
+import java.util.Objects;
+import java.util.Set;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 import br.com.rodrigodip.orders.client.PaymentProperties;
 import br.com.rodrigodip.orders.client.dto.PaymentGatewayResponse;
+import br.com.rodrigodip.orders.entity.Order;
 import br.com.rodrigodip.orders.enums.OrderStatus;
 import br.com.rodrigodip.orders.exceptions.OrderNotFoundException;
 import br.com.rodrigodip.orders.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentGatewayService {
@@ -30,29 +34,33 @@ public class PaymentGatewayService {
 
     @Transactional
     public Void updatePaymentStatus(PaymentGatewayResponse paymentGateway) {
-
-        var foundOrder = orderRepository.findByIdAndPaymentKey(
-                paymentGateway.id(),
-                paymentGateway.paymentKey())
+        Order order = orderRepository.findById(paymentGateway.id())
                 .orElseThrow(() -> new OrderNotFoundException(paymentGateway.id()));
 
-        if (TERMINAL_STATUSES.contains(foundOrder.getStatus())) {
+        // Idempotency: a callback with a stale/unknown payment key (e.g. a late
+        // callback for a previous attempt) must not 404 — it is simply ignored.
+        if (!Objects.equals(order.getPaymentKey(), paymentGateway.paymentKey())) {
+            log.info("Ignoring PSP callback for order {} with stale/unknown payment key", paymentGateway.id());
+            return null;
+        }
+
+        if (TERMINAL_STATUSES.contains(order.getStatus())) {
             return null;
         }
 
         if (paymentGateway.status()) {
-            foundOrder.setStatus(OrderStatus.PAID);
-        } else if (foundOrder.getPaymentAttempts() >= paymentProperties.getMaxAttempts()) {
-            foundOrder.setStatus(OrderStatus.CANCELLED);
+            order.setStatus(OrderStatus.PAID);
+        } else if (order.getPaymentAttempts() >= paymentProperties.getMaxAttempts()) {
+            order.setStatus(OrderStatus.CANCELLED);
         } else {
-            foundOrder.setStatus(OrderStatus.PAYMENT_FAILED);
+            order.setStatus(OrderStatus.PAYMENT_FAILED);
         }
-        foundOrder.setNotes(paymentGateway.notes());
+        order.setNotes(paymentGateway.notes());
 
-        orderRepository.save(foundOrder);
+        orderRepository.save(order);
 
-        if (foundOrder.getStatus() == OrderStatus.PAID) {
-            orderEventPublisher.publishPaid(foundOrder);
+        if (order.getStatus() == OrderStatus.PAID) {
+            orderEventPublisher.publishPaid(order);
         }
 
         return null;

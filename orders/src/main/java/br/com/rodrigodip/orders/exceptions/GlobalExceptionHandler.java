@@ -105,6 +105,22 @@ public class GlobalExceptionHandler {
 				.body(response);
 	}
 
+	@ExceptionHandler(InvalidCallbackPayloadException.class)
+	public ResponseEntity<ErrorResponse> handleInvalidCallbackPayload(
+			InvalidCallbackPayloadException ex, HttpServletRequest request) {
+
+		ErrorResponse response = new ErrorResponse(
+				Instant.now(),
+				HttpStatus.BAD_REQUEST.value(),
+				HttpStatus.BAD_REQUEST.getReasonPhrase(),
+				ex.getMessage(),
+				request.getRequestURI());
+
+		return ResponseEntity
+				.status(HttpStatus.BAD_REQUEST)
+				.body(response);
+	}
+
 	@ExceptionHandler(PaymentCallbackUnauthorizedException.class)
 	public ResponseEntity<ErrorResponse> handlePaymentCallbackUnauthorized(
 			PaymentCallbackUnauthorizedException ex, HttpServletRequest request) {
